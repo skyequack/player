@@ -382,7 +382,7 @@ class MusicPlayerApp(QWidget):
     def create_now_playing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(0, 0, 0, 20)
         layout.setSpacing(1)
 
         # Header with back button
@@ -443,6 +443,9 @@ class MusicPlayerApp(QWidget):
         slider_layout.addWidget(self.time_label)
         
         layout.addWidget(slider_container)
+        
+        # Add space before control buttons
+        layout.addSpacing(12)
 
         # Control buttons
         controls = QHBoxLayout()
@@ -452,14 +455,14 @@ class MusicPlayerApp(QWidget):
         self.play_btn = QPushButton("►")
         self.next_btn = QPushButton("⏭")
 
-        # Smaller buttons for compact layout
-        self.prev_btn.setFixedSize(27, 27)
-        self.play_btn.setFixedSize(33, 33)
-        self.next_btn.setFixedSize(27, 27)
+        # Larger round buttons
+        self.prev_btn.setFixedSize(40, 40)
+        self.play_btn.setFixedSize(50, 50)
+        self.next_btn.setFixedSize(40, 40)
         
-        self.prev_btn.setStyleSheet("border-radius: 14px; font-size: 12px;")
-        self.play_btn.setStyleSheet("border-radius: 17px; font-size: 14px;")
-        self.next_btn.setStyleSheet("border-radius: 14px; font-size: 12px;")
+        self.prev_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
+        self.play_btn.setStyleSheet("border-radius: 25px; font-size: 16px;")
+        self.next_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
 
         self.play_btn.setObjectName("accent")
 
@@ -474,7 +477,6 @@ class MusicPlayerApp(QWidget):
         controls.addStretch()
 
         layout.addLayout(controls)
-        layout.addSpacing(4)  # Small bottom buffer
         
         return page
 
