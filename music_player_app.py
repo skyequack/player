@@ -41,7 +41,10 @@ class MusicPlayerApp(QWidget):
         self.track_ending = False
 
         # Pagination state
-        self.items_per_page = 10
+        self.albums_per_page = 8
+        self.artists_per_page = 10
+        self.favorites_per_page = 10
+        self.tracks_per_page = 10
         self.album_page = 0
         self.artist_page = 0
         self.favorites_page = 0
@@ -619,23 +622,23 @@ class MusicPlayerApp(QWidget):
 
     def next_page(self, list_type):
         if list_type == 'albums':
-            max_page = (len(self.all_albums) - 1) // self.items_per_page
+            max_page = (len(self.all_albums) - 1) // self.albums_per_page
             if self.album_page < max_page:
                 self.album_page += 1
                 self.update_album_page()
         elif list_type == 'artists':
-            max_page = (len(self.all_artists) - 1) // self.items_per_page
+            max_page = (len(self.all_artists) - 1) // self.artists_per_page
             if self.artist_page < max_page:
                 self.artist_page += 1
                 self.update_artist_page()
         elif list_type == 'favorites':
             fav_albums = [a for a in self.favorites if a in self.albums]
-            max_page = (len(fav_albums) - 1) // self.items_per_page if fav_albums else 0
+            max_page = (len(fav_albums) - 1) // self.favorites_per_page if fav_albums else 0
             if self.favorites_page < max_page:
                 self.favorites_page += 1
                 self.update_favorites_page()
         elif list_type == 'tracks':
-            max_page = (len(self.all_tracks_data) - 1) // self.items_per_page
+            max_page = (len(self.all_tracks_data) - 1) // self.tracks_per_page
             if self.track_page < max_page:
                 self.track_page += 1
                 self.update_track_page()
@@ -654,8 +657,8 @@ class MusicPlayerApp(QWidget):
 
     def update_album_page(self):
         self.album_list.clear()
-        start = self.album_page * self.items_per_page
-        end = start + self.items_per_page
+        start = self.album_page * self.albums_per_page
+        end = start + self.albums_per_page
         page_albums = self.all_albums[start:end]
         
         for album in page_albums:
@@ -664,13 +667,13 @@ class MusicPlayerApp(QWidget):
             item.setData(Qt.UserRole, album)
             self.album_list.addItem(item)
         
-        total_pages = max(1, (len(self.all_albums) + self.items_per_page - 1) // self.items_per_page)
+        total_pages = max(1, (len(self.all_albums) + self.albums_per_page - 1) // self.albums_per_page)
         self.album_page_label.setText(f"Page {self.album_page + 1}/{total_pages}")
 
     def update_artist_page(self):
         self.artist_list.clear()
-        start = self.artist_page * self.items_per_page
-        end = start + self.items_per_page
+        start = self.artist_page * self.artists_per_page
+        end = start + self.artists_per_page
         page_artists = self.all_artists[start:end]
         
         for artist in page_artists:
@@ -678,15 +681,15 @@ class MusicPlayerApp(QWidget):
             item.setData(Qt.UserRole, artist)
             self.artist_list.addItem(item)
         
-        total_pages = max(1, (len(self.all_artists) + self.items_per_page - 1) // self.items_per_page)
+        total_pages = max(1, (len(self.all_artists) + self.artists_per_page - 1) // self.artists_per_page)
         self.artist_page_label.setText(f"Page {self.artist_page + 1}/{total_pages}")
 
     def update_favorites_page(self):
         self.favorites_list.clear()
         fav_albums = [a for a in self.favorites if a in self.albums]
         
-        start = self.favorites_page * self.items_per_page
-        end = start + self.items_per_page
+        start = self.favorites_page * self.favorites_per_page
+        end = start + self.favorites_per_page
         page_favorites = fav_albums[start:end]
         
         for album in page_favorites:
@@ -695,13 +698,13 @@ class MusicPlayerApp(QWidget):
             item.setData(Qt.UserRole, album)
             self.favorites_list.addItem(item)
         
-        total_pages = max(1, (len(fav_albums) + self.items_per_page - 1) // self.items_per_page)
+        total_pages = max(1, (len(fav_albums) + self.favorites_per_page - 1) // self.favorites_per_page)
         self.favorites_page_label.setText(f"Page {self.favorites_page + 1}/{total_pages}")
 
     def update_track_page(self):
         self.track_list.clear()
-        start = self.track_page * self.items_per_page
-        end = start + self.items_per_page
+        start = self.track_page * self.tracks_per_page
+        end = start + self.tracks_per_page
         page_tracks = self.all_tracks_data[start:end]
         
         for track_idx, track_title in page_tracks:
@@ -709,7 +712,7 @@ class MusicPlayerApp(QWidget):
             item.setData(Qt.UserRole, track_idx)
             self.track_list.addItem(item)
         
-        total_pages = max(1, (len(self.all_tracks_data) + self.items_per_page - 1) // self.items_per_page)
+        total_pages = max(1, (len(self.all_tracks_data) + self.tracks_per_page - 1) // self.tracks_per_page)
         self.track_page_label.setText(f"Page {self.track_page + 1}/{total_pages}")
 
 
