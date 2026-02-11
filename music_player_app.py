@@ -42,7 +42,7 @@ class MusicPlayerApp(QWidget):
 
         # Pagination state
         self.albums_per_page = 8
-        self.artists_per_page = 10
+        self.artists_per_page = 14
         self.favorites_per_page = 10
         self.tracks_per_page = 10
         self.album_page = 0
@@ -234,7 +234,7 @@ class MusicPlayerApp(QWidget):
             b.setObjectName("accent")
             b.setFixedHeight(33)
 
-        btn_albums.clicked.connect(lambda: self.stack.setCurrentIndex(1))
+        btn_albums.clicked.connect(self.show_albums_page)
         btn_artists.clicked.connect(lambda: self.stack.setCurrentIndex(2))
         btn_favorites.clicked.connect(lambda: self.stack.setCurrentIndex(3))
 
@@ -718,6 +718,13 @@ class MusicPlayerApp(QWidget):
 
 
     # ---------- Navigation ----------
+    def show_albums_page(self):
+        """Navigate to albums page and reset to show all albums"""
+        self.all_albums = sorted(self.albums.keys())
+        self.album_page = 0
+        self.update_album_page()
+        self.stack.setCurrentIndex(1)
+
     def show_album_detail(self, item):
         album = item.data(Qt.UserRole)
         self.current_album = album
