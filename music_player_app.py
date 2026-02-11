@@ -23,7 +23,7 @@ class MusicPlayerApp(QWidget):
 
         # Portrait screen dimensions for iPod-style display
         self.SCREEN_WIDTH = 320
-        self.SCREEN_HEIGHT = 480
+        self.SCREEN_HEIGHT = 420
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
@@ -262,7 +262,7 @@ class MusicPlayerApp(QWidget):
         self.album_list = QListWidget()
         self.album_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.album_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.album_list.setMaximumHeight(400)
+        self.album_list.setMaximumHeight(340)
         self.album_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.album_list)
 
@@ -288,7 +288,7 @@ class MusicPlayerApp(QWidget):
         self.artist_list = QListWidget()
         self.artist_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.artist_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.artist_list.setMaximumHeight(400)
+        self.artist_list.setMaximumHeight(340)
         self.artist_list.itemClicked.connect(self.show_artist_albums)
         layout.addWidget(self.artist_list)
 
@@ -314,7 +314,7 @@ class MusicPlayerApp(QWidget):
         self.favorites_list = QListWidget()
         self.favorites_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.favorites_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.favorites_list.setMaximumHeight(400)
+        self.favorites_list.setMaximumHeight(340)
         self.favorites_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.favorites_list)
 
@@ -362,7 +362,7 @@ class MusicPlayerApp(QWidget):
         self.track_list = QListWidget()
         self.track_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.track_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.track_list.setMaximumHeight(400)
+        self.track_list.setMaximumHeight(340)
         self.track_list.itemClicked.connect(self.play_selected_track)
         layout.addWidget(self.track_list)
 
