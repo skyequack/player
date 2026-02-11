@@ -479,10 +479,42 @@ class MusicPlayerApp(QWidget):
                     if apic_frames:
                         meta['art'] = apic_frames[0].data
 
+            if meta['art'] is None:
+                meta['art'] = self.load_folder_art(path)
+
         except Exception:
             pass
 
         return meta
+
+    def load_folder_art(self, path):
+        folder = os.path.dirname(path)
+        candidates = [
+            "cover.jpg", "cover.png",
+            "folder.jpg", "folder.png",
+            "front.jpg", "front.png",
+            "album.jpg", "album.png",
+            "artwork.jpg", "artwork.png"
+        ]
+
+        try:
+            entries = os.listdir(folder)
+        except Exception:
+            return None
+
+        lookup = {name.lower(): name for name in entries}
+        for name in candidates:
+            actual = lookup.get(name)
+            if not actual:
+                continue
+            file_path = os.path.join(folder, actual)
+            try:
+                with open(file_path, "rb") as f:
+                    return f.read()
+            except Exception:
+                continue
+
+        return None
 
     def get_track_number(self, path):
         return self.get_metadata(path).get('track', 999)
