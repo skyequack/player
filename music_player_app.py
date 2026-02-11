@@ -23,7 +23,7 @@ class MusicPlayerApp(QWidget):
 
         # Portrait screen dimensions for iPod-style display
         self.SCREEN_WIDTH = 320
-        self.SCREEN_HEIGHT = 420
+        self.SCREEN_HEIGHT = 460
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
