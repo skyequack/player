@@ -689,4 +689,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     music_folder = os.path.expanduser("~/Music")
     player = MusicPlayerApp(music_folder)
+    player.show()
     sys.exit(app.exec_())
