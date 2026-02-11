@@ -40,6 +40,16 @@ class MusicPlayerApp(QWidget):
         self.current_index = -1
         self.track_ending = False
 
+        # Pagination state
+        self.items_per_page = 10
+        self.album_page = 0
+        self.artist_page = 0
+        self.favorites_page = 0
+        self.track_page = 0
+        self.all_albums = []
+        self.all_artists = []
+        self.all_tracks_data = []
+
         # Set fixed size for portrait display
         self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
         self.setWindowTitle("Music Player")
@@ -78,9 +88,8 @@ class MusicPlayerApp(QWidget):
         }
 
         QListWidget::item {
-            padding: 10px 12px;
+            padding: 6px 8px;
             border-bottom: 1px solid #f0f0f0;
-            min-height: 44px;
         }
 
         QListWidget::item:selected {
@@ -177,6 +186,30 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(spacer)
         return header
 
+    def create_pagination_footer(self, prev_action, next_action):
+        footer = QWidget()
+        footer.setFixedHeight(36)
+        layout = QHBoxLayout(footer)
+        layout.setContentsMargins(8, 4, 8, 4)
+
+        prev_btn = QPushButton("‹ Prev")
+        prev_btn.setFixedWidth(60)
+        prev_btn.clicked.connect(prev_action)
+        layout.addWidget(prev_btn)
+
+        page_label = QLabel("Page 1/1")
+        page_label.setObjectName("page_label")
+        page_label.setAlignment(Qt.AlignCenter)
+        page_label.setStyleSheet("font-size: 10px; color: #666;")
+        layout.addWidget(page_label, 1)
+
+        next_btn = QPushButton("Next ›")
+        next_btn.setFixedWidth(60)
+        next_btn.clicked.connect(next_action)
+        layout.addWidget(next_btn)
+
+        return footer
+
     def create_landing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -232,6 +265,14 @@ class MusicPlayerApp(QWidget):
         self.album_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.album_list)
 
+        # Pagination footer
+        footer = self.create_pagination_footer(
+            lambda: self.prev_page('albums'),
+            lambda: self.next_page('albums')
+        )
+        self.album_page_label = footer.findChild(QLabel, "page_label")
+        layout.addWidget(footer)
+
         return page
 
     def create_artists_page(self):
@@ -249,6 +290,14 @@ class MusicPlayerApp(QWidget):
         self.artist_list.itemClicked.connect(self.show_artist_albums)
         layout.addWidget(self.artist_list)
 
+        # Pagination footer
+        footer = self.create_pagination_footer(
+            lambda: self.prev_page('artists'),
+            lambda: self.next_page('artists')
+        )
+        self.artist_page_label = footer.findChild(QLabel, "page_label")
+        layout.addWidget(footer)
+
         return page
 
     def create_favorites_page(self):
@@ -265,6 +314,14 @@ class MusicPlayerApp(QWidget):
         self.favorites_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.favorites_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.favorites_list)
+
+        # Pagination footer
+        footer = self.create_pagination_footer(
+            lambda: self.prev_page('favorites'),
+            lambda: self.next_page('favorites')
+        )
+        self.favorites_page_label = footer.findChild(QLabel, "page_label")
+        layout.addWidget(footer)
 
         return page
 
@@ -305,22 +362,30 @@ class MusicPlayerApp(QWidget):
         self.track_list.itemClicked.connect(self.play_selected_track)
         layout.addWidget(self.track_list)
 
+        # Pagination footer
+        footer = self.create_pagination_footer(
+            lambda: self.prev_page('tracks'),
+            lambda: self.next_page('tracks')
+        )
+        self.track_page_label = footer.findChild(QLabel, "page_label")
+        layout.addWidget(footer)
+
         return page
 
     def create_now_playing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 12)
-        layout.setSpacing(4)
+        layout.setContentsMargins(0, 0, 0, 8)
+        layout.setSpacing(2)
 
         # Header with back button
         header = QWidget()
-        header.setFixedHeight(32)
+        header.setFixedHeight(28)
         h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(8, 4, 8, 4)
+        h_layout.setContentsMargins(8, 2, 8, 2)
         
         back_btn = QPushButton("‹")
-        back_btn.setFixedSize(32, 28)
+        back_btn.setFixedSize(32, 24)
         back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(4))
         h_layout.addWidget(back_btn)
         h_layout.addStretch()
@@ -334,7 +399,7 @@ class MusicPlayerApp(QWidget):
         
         self.album_art = QLabel()
         self.album_art.setAlignment(Qt.AlignCenter)
-        self.album_art.setFixedSize(200, 200)  # Fixed size for 320px wide screen
+        self.album_art.setFixedSize(180, 180)  # Fixed size for 320px wide screen
         self.album_art.setScaledContents(False)
         art_layout.addWidget(self.album_art, alignment=Qt.AlignCenter)
         
@@ -381,13 +446,13 @@ class MusicPlayerApp(QWidget):
         self.next_btn = QPushButton("⏭")
 
         # Smaller buttons for compact layout
-        self.prev_btn.setFixedSize(40, 40)
-        self.play_btn.setFixedSize(48, 48)
-        self.next_btn.setFixedSize(40, 40)
+        self.prev_btn.setFixedSize(36, 36)
+        self.play_btn.setFixedSize(44, 44)
+        self.next_btn.setFixedSize(36, 36)
         
-        self.prev_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
-        self.play_btn.setStyleSheet("border-radius: 24px; font-size: 15px;")
-        self.next_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
+        self.prev_btn.setStyleSheet("border-radius: 18px; font-size: 12px;")
+        self.play_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
+        self.next_btn.setStyleSheet("border-radius: 18px; font-size: 12px;")
 
         self.play_btn.setObjectName("accent")
 
@@ -532,31 +597,117 @@ class MusicPlayerApp(QWidget):
     def get_track_number(self, path):
         return self.get_metadata(path).get('track', 999)
 
+    # ---------- Pagination ----------
+    def prev_page(self, list_type):
+        if list_type == 'albums' and self.album_page > 0:
+            self.album_page -= 1
+            self.update_album_page()
+        elif list_type == 'artists' and self.artist_page > 0:
+            self.artist_page -= 1
+            self.update_artist_page()
+        elif list_type == 'favorites' and self.favorites_page > 0:
+            self.favorites_page -= 1
+            self.update_favorites_page()
+        elif list_type == 'tracks' and self.track_page > 0:
+            self.track_page -= 1
+            self.update_track_page()
+
+    def next_page(self, list_type):
+        if list_type == 'albums':
+            max_page = (len(self.all_albums) - 1) // self.items_per_page
+            if self.album_page < max_page:
+                self.album_page += 1
+                self.update_album_page()
+        elif list_type == 'artists':
+            max_page = (len(self.all_artists) - 1) // self.items_per_page
+            if self.artist_page < max_page:
+                self.artist_page += 1
+                self.update_artist_page()
+        elif list_type == 'favorites':
+            fav_albums = [a for a in self.favorites if a in self.albums]
+            max_page = (len(fav_albums) - 1) // self.items_per_page if fav_albums else 0
+            if self.favorites_page < max_page:
+                self.favorites_page += 1
+                self.update_favorites_page()
+        elif list_type == 'tracks':
+            max_page = (len(self.all_tracks_data) - 1) // self.items_per_page
+            if self.track_page < max_page:
+                self.track_page += 1
+                self.update_track_page()
+
     # ---------- Lists ----------
     def populate_lists(self):
+        self.all_albums = sorted(self.albums.keys())
+        self.all_artists = sorted(self.artists.keys())
+        self.album_page = 0
+        self.artist_page = 0
+        self.favorites_page = 0
+        
+        self.update_album_page()
+        self.update_artist_page()
+        self.update_favorites_page()
+
+    def update_album_page(self):
         self.album_list.clear()
-        for album in sorted(self.albums):
+        start = self.album_page * self.items_per_page
+        end = start + self.items_per_page
+        page_albums = self.all_albums[start:end]
+        
+        for album in page_albums:
             artist = self.album_metadata[album]['artist']
             item = QListWidgetItem(f"{album}\n{artist}")
             item.setData(Qt.UserRole, album)
             self.album_list.addItem(item)
+        
+        total_pages = max(1, (len(self.all_albums) + self.items_per_page - 1) // self.items_per_page)
+        self.album_page_label.setText(f"Page {self.album_page + 1}/{total_pages}")
 
+    def update_artist_page(self):
         self.artist_list.clear()
-        for artist in sorted(self.artists):
+        start = self.artist_page * self.items_per_page
+        end = start + self.items_per_page
+        page_artists = self.all_artists[start:end]
+        
+        for artist in page_artists:
             item = QListWidgetItem(artist)
             item.setData(Qt.UserRole, artist)
             self.artist_list.addItem(item)
+        
+        total_pages = max(1, (len(self.all_artists) + self.items_per_page - 1) // self.items_per_page)
+        self.artist_page_label.setText(f"Page {self.artist_page + 1}/{total_pages}")
 
-        self.update_favorites_list()
-
-    def update_favorites_list(self):
+    def update_favorites_page(self):
         self.favorites_list.clear()
-        for album in self.favorites:
-            if album in self.albums:
-                artist = self.album_metadata[album]['artist']
-                item = QListWidgetItem(f"{album}\n{artist}")
-                item.setData(Qt.UserRole, album)
-                self.favorites_list.addItem(item)
+        fav_albums = [a for a in self.favorites if a in self.albums]
+        
+        start = self.favorites_page * self.items_per_page
+        end = start + self.items_per_page
+        page_favorites = fav_albums[start:end]
+        
+        for album in page_favorites:
+            artist = self.album_metadata[album]['artist']
+            item = QListWidgetItem(f"{album}\n{artist}")
+            item.setData(Qt.UserRole, album)
+            self.favorites_list.addItem(item)
+        
+        total_pages = max(1, (len(fav_albums) + self.items_per_page - 1) // self.items_per_page)
+        self.favorites_page_label.setText(f"Page {self.favorites_page + 1}/{total_pages}")
+
+    def update_track_page(self):
+        self.track_list.clear()
+        start = self.track_page * self.items_per_page
+        end = start + self.items_per_page
+        page_tracks = self.all_tracks_data[start:end]
+        
+        for track_idx, track_title in page_tracks:
+            item = QListWidgetItem(track_title)
+            item.setData(Qt.UserRole, track_idx)
+            self.track_list.addItem(item)
+        
+        total_pages = max(1, (len(self.all_tracks_data) + self.items_per_page - 1) // self.items_per_page)
+        self.track_page_label.setText(f"Page {self.track_page + 1}/{total_pages}")
+
+
 
     # ---------- Navigation ----------
     def show_album_detail(self, item):
@@ -570,29 +721,28 @@ class MusicPlayerApp(QWidget):
         # FIX: Update favorite button to show current state
         self.update_favorite_button()
 
-        self.track_list.clear()
+        # Build track data for pagination
+        self.all_tracks_data = []
         for i, path in enumerate(self.current_tracks):
             meta = self.get_metadata(path)
-            it = QListWidgetItem(f"{i+1}. {meta['title']}")
-            it.setData(Qt.UserRole, i)
-            self.track_list.addItem(it)
+            self.all_tracks_data.append((i, f"{i+1}. {meta['title']}"))
+        
+        self.track_page = 0
+        self.update_track_page()
 
         self.stack.setCurrentIndex(4)
 
     def show_artist_albums(self, item):
         artist = item.data(Qt.UserRole)
-        self.album_list.clear()
-
-        for album in self.artists[artist]:
-            art = self.album_metadata[album]['artist']
-            it = QListWidgetItem(f"{album}\n{art}")
-            it.setData(Qt.UserRole, album)
-            self.album_list.addItem(it)
-
+        self.all_albums = sorted(self.artists[artist])
+        self.album_page = 0
+        self.update_album_page()
         self.stack.setCurrentIndex(1)
 
     def go_back_from_detail(self):
-        self.populate_lists()
+        self.all_albums = sorted(self.albums.keys())
+        self.album_page = 0
+        self.update_album_page()
         self.stack.setCurrentIndex(1)
 
     # ---------- Playback ----------
@@ -621,7 +771,7 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setText(f"{meta['artist']} • {meta['album']}")
 
         art = meta.get('art')
-        size = 200  # Fixed size for portrait screen
+        size = 180  # Fixed size for portrait screen
 
         if art:
             pix = QPixmap()
@@ -697,7 +847,7 @@ class MusicPlayerApp(QWidget):
             self.favorites.append(self.current_album)
 
         self.save_favorites()
-        self.update_favorites_list()
+        self.update_favorites_page()
         # FIX: Update button after toggling
         self.update_favorite_button()
 
