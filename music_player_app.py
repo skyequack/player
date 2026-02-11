@@ -21,19 +21,9 @@ class MusicPlayerApp(QWidget):
         self.music_root = music_root
         self.favorites_file = os.path.expanduser("~/.music_player_favorites.json")
 
-<<<<<<< HEAD
-        # DPI scaling
-        self.scale = self.ui_scale()
-        self._resize_timer = QTimer(self)
-        self._resize_timer.setSingleShot(True)
-        self._resize_timer.timeout.connect(self.refresh_layout_metrics)
-
-=======
-        # Portrait screen dimensions for iPod-style display
-        self.SCREEN_WIDTH = 320
-        self.SCREEN_HEIGHT = 480
-        
->>>>>>> refs/remotes/origin/main
+    # Portrait screen dimensions for iPod-style display
+    self.SCREEN_WIDTH = 320
+    self.SCREEN_HEIGHT = 480
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
         self.player = self.instance.media_player_new()
@@ -49,54 +39,25 @@ class MusicPlayerApp(QWidget):
         self.current_index = -1
         self.track_ending = False
 
-<<<<<<< HEAD
-=======
-        # Set fixed size for portrait display
-        self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
-        self.setWindowTitle("Music Player")
-        
-        self.set_minimal_theme()
->>>>>>> refs/remotes/origin/main
+    # Set fixed size for portrait display
+    self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+    self.setWindowTitle("Music Player")
+
+    self.set_minimal_theme()
         self.init_ui()
-        self.refresh_layout_metrics()
         self.scan_music_library()
 
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_progress)
         self.timer.start(500)
 
-<<<<<<< HEAD
-        self.show_window()
-
-    # ---------- Scaling ----------
-    def ui_scale(self):
-        screen = QGuiApplication.primaryScreen()
-        if screen is None:
-            return 1.0
-
-        geometry = screen.geometry()
-        min_dim = max(1, min(geometry.width(), geometry.height()))
-        dpi = max(1.0, screen.logicalDotsPerInch())
-
-        base = min_dim / 800.0
-        dpi_scale = dpi / 96.0
-        scale = base * (dpi_scale ** 0.5)
-
-        return max(0.6, min(1.6, scale))
-
-=======
     # ---------- Helper methods ----------
->>>>>>> refs/remotes/origin/main
     def scaled(self, px):
         """No scaling needed - use pixels directly for fixed-size display"""
         return px
 
     def touch_height(self):
-<<<<<<< HEAD
-        return max(self.scaled(44), 36)
-=======
         return 32
->>>>>>> refs/remotes/origin/main
 
     # ---------- Theme ----------
     def set_minimal_theme(self):
@@ -109,63 +70,12 @@ class MusicPlayerApp(QWidget):
             font-size: 10px;
         }
 
-<<<<<<< HEAD
-        QLabel#appTitle {{
-            font-size: {self.scaled(16)}px;
-            font-weight: 700;
-        }}
-
-        QLabel#headerTitle {{
-            font-size: {self.scaled(13)}px;
-            font-weight: 600;
-        }}
-
-        QLabel#detailTitle {{
-            font-size: {self.scaled(12)}px;
-            font-weight: 600;
-        }}
-
-        QLabel#nowTitle {{
-            font-size: {self.scaled(12)}px;
-            font-weight: 600;
-        }}
-
-        QListWidget {{
-=======
         QListWidget {
->>>>>>> refs/remotes/origin/main
             border: none;
             padding: 2px;
             outline: none;
         }
 
-<<<<<<< HEAD
-        QListWidget::item {{
-            padding: {self.scaled(10)}px;
-            border-bottom: 1px solid #e5e5e5;
-        }}
-
-        QListWidget::item:selected {{
-            background-color: #e6f0ff;
-        }}
-
-        QPushButton {{
-            background-color: #ffffff;
-            border: 1px solid #cfcfcf;
-            border-radius: {self.scaled(6)}px;
-            padding: {self.scaled(8)}px {self.scaled(12)}px;
-            min-height: {self.touch_height()}px;
-            min-width: {self.scaled(44)}px;
-        }}
-
-        QPushButton:hover {{
-            background-color: #f2f2f2;
-        }}
-
-        QPushButton:pressed {{
-            background-color: #e6e6e6;
-        }}
-=======
         QListWidget::item {
             padding: 6px 8px;
             border-bottom: 1px solid #f0f0f0;
@@ -188,7 +98,6 @@ class MusicPlayerApp(QWidget):
         QPushButton:pressed {
             background-color: #e8e8e8;
         }
->>>>>>> refs/remotes/origin/main
 
         QPushButton#accent {
             background-color: #007AFF;
@@ -222,52 +131,14 @@ class MusicPlayerApp(QWidget):
         }
         """)
 
-    def refresh_layout_metrics(self):
-        self.scale = self.ui_scale()
-        self.set_minimal_theme()
-        if hasattr(self, "main_layout"):
-            self.main_layout.setContentsMargins(
-                self.scaled(6), self.scaled(6),
-                self.scaled(6), self.scaled(6)
-            )
-            self.main_layout.setSpacing(self.scaled(6))
-        self.apply_control_button_sizes()
-
-    def apply_control_button_sizes(self):
-        size = self.scaled(56)
-        if hasattr(self, "prev_btn"):
-            for b in [self.prev_btn, self.play_btn, self.next_btn]:
-                b.setFixedSize(size, size)
-                b.setStyleSheet(f"border-radius: {size//2}px;")
-
-    def show_window(self):
-        screen = QGuiApplication.primaryScreen()
-        if screen is None:
-            self.show()
-            return
-
-        geometry = screen.geometry()
-        if min(geometry.width(), geometry.height()) <= 600:
-            self.showFullScreen()
-        else:
-            self.resize(self.scaled(900), self.scaled(600))
-            self.show()
-
     # ---------- UI ----------
     def init_ui(self):
-<<<<<<< HEAD
-        self.main_layout = QVBoxLayout(self)
-        self.main_layout.setContentsMargins(self.scaled(6), self.scaled(6),
-                                            self.scaled(6), self.scaled(6))
-        self.main_layout.setSpacing(self.scaled(6))
-=======
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
->>>>>>> refs/remotes/origin/main
 
         self.stack = QStackedWidget()
-        self.main_layout.addWidget(self.stack)
+        main_layout.addWidget(self.stack)
 
         self.landing_page = self.create_landing_page()
         self.albums_page = self.create_albums_page()
@@ -296,11 +167,7 @@ class MusicPlayerApp(QWidget):
 
         label = QLabel(title)
         label.setAlignment(Qt.AlignCenter)
-<<<<<<< HEAD
-        label.setObjectName("headerTitle")
-=======
         label.setStyleSheet("font-size: 11px; font-weight: 600;")
->>>>>>> refs/remotes/origin/main
         layout.addWidget(label, 1)
 
         spacer = QLabel()
@@ -311,20 +178,12 @@ class MusicPlayerApp(QWidget):
     def create_landing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-<<<<<<< HEAD
-        layout.setSpacing(self.scaled(6))
-=======
         layout.setSpacing(8)
         layout.setContentsMargins(16, 40, 16, 16)
->>>>>>> refs/remotes/origin/main
 
         title = QLabel("Music")
         title.setAlignment(Qt.AlignCenter)
-<<<<<<< HEAD
-        title.setObjectName("appTitle")
-=======
         title.setStyleSheet("font-size: 24px; font-weight: 700; color: #000000;")
->>>>>>> refs/remotes/origin/main
         layout.addWidget(title)
         
         layout.addSpacing(20)
@@ -411,13 +270,9 @@ class MusicPlayerApp(QWidget):
 
         self.detail_album_label = QLabel("")
         self.detail_album_label.setAlignment(Qt.AlignCenter)
-<<<<<<< HEAD
-        self.detail_album_label.setObjectName("detailTitle")
-=======
         self.detail_album_label.setStyleSheet(
             "font-size: 10px; font-weight: 600;"
         )
->>>>>>> refs/remotes/origin/main
         h.addWidget(self.detail_album_label, 1)
 
         self.favorite_btn = QPushButton("♡")
@@ -471,14 +326,10 @@ class MusicPlayerApp(QWidget):
         # Track info
         self.track_label = QLabel("No track")
         self.track_label.setAlignment(Qt.AlignCenter)
-<<<<<<< HEAD
-        self.track_label.setObjectName("nowTitle")
-=======
         self.track_label.setWordWrap(True)
         self.track_label.setStyleSheet(
             "font-size: 13px; font-weight: 600; padding: 0 12px;"
         )
->>>>>>> refs/remotes/origin/main
         layout.addWidget(self.track_label)
 
         self.artist_label = QLabel("")
@@ -514,9 +365,6 @@ class MusicPlayerApp(QWidget):
         self.play_btn = QPushButton("▶")
         self.next_btn = QPushButton("⏭")
 
-<<<<<<< HEAD
-        self.apply_control_button_sizes()
-=======
         # Smaller buttons for compact layout
         self.prev_btn.setFixedSize(44, 44)
         self.play_btn.setFixedSize(52, 52)
@@ -525,7 +373,6 @@ class MusicPlayerApp(QWidget):
         self.prev_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
         self.play_btn.setStyleSheet("border-radius: 26px; font-size: 16px;")
         self.next_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
->>>>>>> refs/remotes/origin/main
 
         self.play_btn.setObjectName("accent")
 
@@ -544,19 +391,7 @@ class MusicPlayerApp(QWidget):
         
         return page
 
-<<<<<<< HEAD
-    # ---------- Resize ----------
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        # FIX: Check if album_art exists before accessing it
-        if hasattr(self, 'album_art'):
-            self.current_art_size = min(
-                self.album_art.width(), self.album_art.height()
-            )
-        self._resize_timer.start(150)
-=======
     # ---------- No resize needed for fixed-size window ----------
->>>>>>> refs/remotes/origin/main
 
     # ---------- Music scan ----------
     def scan_music_library(self):
