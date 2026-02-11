@@ -37,7 +37,7 @@ class MusicPlayerApp(QWidget):
         self.current_tracks = []
         self.current_album = None
         self.current_index = -1
-        self.current_art_size = 300
+        self.current_art_size = 150  # FIX: Reduced from 300 to 150 for small screen
         self.track_ending = False  # FIX: Prevent duplicate auto-advance
 
         self.showFullScreen()
@@ -51,7 +51,14 @@ class MusicPlayerApp(QWidget):
 
     # ---------- Scaling ----------
     def ui_scale(self):
+        # FIX: For 480x320 screens, use fixed small scale
         screen = QGuiApplication.primaryScreen()
+        geometry = screen.geometry()
+        
+        # If screen width is 480 or less, use minimal scaling
+        if geometry.width() <= 480:
+            return 0.5  # Force small scale for tiny displays
+        
         dpi = screen.logicalDotsPerInch()
         return dpi / 96.0
 
@@ -59,7 +66,7 @@ class MusicPlayerApp(QWidget):
         return int(px * self.scale)
 
     def touch_height(self):
-        return self.scaled(56)
+        return self.scaled(40)  # FIX: Reduced from 56 to 40
 
     # ---------- Theme ----------
     def set_minimal_theme(self):
@@ -68,17 +75,17 @@ class MusicPlayerApp(QWidget):
             background-color: #ffffff;
             color: #000000;
             font-family: "Segoe UI", Arial;
-            font-size: {self.scaled(14)}px;
+            font-size: {self.scaled(11)}px;
         }}
 
         QListWidget {{
             border: none;
-            padding: {self.scaled(8)}px;
+            padding: {self.scaled(4)}px;
             outline: none;
         }}
 
         QListWidget::item {{
-            padding: {self.scaled(16)}px;
+            padding: {self.scaled(8)}px;
             border-bottom: 1px solid #e5e5e5;
         }}
 
@@ -89,8 +96,8 @@ class MusicPlayerApp(QWidget):
         QPushButton {{
             background-color: #f5f5f5;
             border: 1px solid #d0d0d0;
-            border-radius: {self.scaled(8)}px;
-            padding: {self.scaled(12)}px;
+            border-radius: {self.scaled(4)}px;
+            padding: {self.scaled(6)}px;
             min-height: {self.touch_height()}px;
         }}
 
@@ -113,31 +120,31 @@ class MusicPlayerApp(QWidget):
         }}
 
         QSlider::groove:horizontal {{
-            height: {self.scaled(6)}px;
+            height: {self.scaled(4)}px;
             background: #e0e0e0;
-            border-radius: {self.scaled(3)}px;
+            border-radius: {self.scaled(2)}px;
         }}
 
         QSlider::sub-page:horizontal {{
             background: #1976d2;
-            border-radius: {self.scaled(3)}px;
+            border-radius: {self.scaled(2)}px;
         }}
 
         QSlider::handle:horizontal {{
             background: #1976d2;
-            width: {self.scaled(20)}px;
-            height: {self.scaled(20)}px;
-            margin: {self.scaled(-7)}px 0;
-            border-radius: {self.scaled(10)}px;
+            width: {self.scaled(16)}px;
+            height: {self.scaled(16)}px;
+            margin: {self.scaled(-6)}px 0;
+            border-radius: {self.scaled(8)}px;
         }}
         """)
 
     # ---------- UI ----------
     def init_ui(self):
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(self.scaled(16), self.scaled(16),
-                                       self.scaled(16), self.scaled(16))
-        main_layout.setSpacing(self.scaled(12))
+        main_layout.setContentsMargins(self.scaled(4), self.scaled(4),
+                                       self.scaled(4), self.scaled(4))
+        main_layout.setSpacing(self.scaled(4))
 
         self.stack = QStackedWidget()
         main_layout.addWidget(self.stack)
@@ -159,7 +166,7 @@ class MusicPlayerApp(QWidget):
     def create_header(self, title, back_action):
         header = QWidget()
         layout = QHBoxLayout(header)
-        layout.setContentsMargins(0, 0, 0, self.scaled(8))
+        layout.setContentsMargins(0, 0, 0, self.scaled(4))
 
         back_btn = QPushButton("Back")
         back_btn.clicked.connect(back_action)
@@ -167,7 +174,7 @@ class MusicPlayerApp(QWidget):
 
         label = QLabel(title)
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet(f"font-size: {self.scaled(18)}px; font-weight: 600;")
+        label.setStyleSheet(f"font-size: {self.scaled(12)}px; font-weight: 600;")
         layout.addWidget(label, 1)
 
         layout.addWidget(QLabel(), 0)
@@ -176,11 +183,11 @@ class MusicPlayerApp(QWidget):
     def create_landing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setSpacing(self.scaled(12))
+        layout.setSpacing(self.scaled(4))
 
         title = QLabel("Music Player")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet(f"font-size: {self.scaled(22)}px; font-weight: 700;")
+        title.setStyleSheet(f"font-size: {self.scaled(14)}px; font-weight: 700;")
         layout.addWidget(title)
 
         btn_albums = QPushButton("Albums")
@@ -257,7 +264,7 @@ class MusicPlayerApp(QWidget):
         self.detail_album_label = QLabel("")
         self.detail_album_label.setAlignment(Qt.AlignCenter)
         self.detail_album_label.setStyleSheet(
-            f"font-size: {self.scaled(16)}px; font-weight: 600;"
+            f"font-size: {self.scaled(11)}px; font-weight: 600;"
         )
         h.addWidget(self.detail_album_label, 1)
 
@@ -290,7 +297,7 @@ class MusicPlayerApp(QWidget):
         self.track_label = QLabel("No track")
         self.track_label.setAlignment(Qt.AlignCenter)
         self.track_label.setStyleSheet(
-            f"font-size: {self.scaled(16)}px; font-weight: 600;"
+            f"font-size: {self.scaled(11)}px; font-weight: 600;"
         )
         layout.addWidget(self.track_label)
 
@@ -312,7 +319,7 @@ class MusicPlayerApp(QWidget):
         self.play_btn = QPushButton("▶")
         self.next_btn = QPushButton("⏭")
 
-        size = self.scaled(72)
+        size = self.scaled(50)  # FIX: Reduced from 72 to 50
         for b in [self.prev_btn, self.play_btn, self.next_btn]:
             b.setFixedSize(size, size)
             b.setStyleSheet(f"border-radius: {size//2}px;")
