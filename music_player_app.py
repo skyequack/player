@@ -335,9 +335,11 @@ class MusicPlayerApp(QWidget):
     # ---------- Resize ----------
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.current_art_size = min(
-            self.album_art.width(), self.album_art.height()
-        )
+        # FIX: Check if album_art exists before accessing it
+        if hasattr(self, 'album_art'):
+            self.current_art_size = min(
+                self.album_art.width(), self.album_art.height()
+            )
 
     # ---------- Music scan ----------
     def scan_music_library(self):
