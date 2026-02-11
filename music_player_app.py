@@ -21,9 +21,10 @@ class MusicPlayerApp(QWidget):
         self.music_root = music_root
         self.favorites_file = os.path.expanduser("~/.music_player_favorites.json")
 
-    # Portrait screen dimensions for iPod-style display
-    self.SCREEN_WIDTH = 320
-    self.SCREEN_HEIGHT = 480
+        # Portrait screen dimensions for iPod-style display
+        self.SCREEN_WIDTH = 320
+        self.SCREEN_HEIGHT = 480
+
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
         self.player = self.instance.media_player_new()
@@ -39,11 +40,11 @@ class MusicPlayerApp(QWidget):
         self.current_index = -1
         self.track_ending = False
 
-    # Set fixed size for portrait display
-    self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
-    self.setWindowTitle("Music Player")
+        # Set fixed size for portrait display
+        self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
+        self.setWindowTitle("Music Player")
 
-    self.set_minimal_theme()
+        self.set_minimal_theme()
         self.init_ui()
         self.scan_music_library()
 
