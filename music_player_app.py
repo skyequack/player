@@ -262,6 +262,7 @@ class MusicPlayerApp(QWidget):
         self.album_list = QListWidget()
         self.album_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.album_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.album_list.setMaximumHeight(400)
         self.album_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.album_list)
 
@@ -287,6 +288,7 @@ class MusicPlayerApp(QWidget):
         self.artist_list = QListWidget()
         self.artist_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.artist_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.artist_list.setMaximumHeight(400)
         self.artist_list.itemClicked.connect(self.show_artist_albums)
         layout.addWidget(self.artist_list)
 
@@ -312,6 +314,7 @@ class MusicPlayerApp(QWidget):
         self.favorites_list = QListWidget()
         self.favorites_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.favorites_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.favorites_list.setMaximumHeight(400)
         self.favorites_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.favorites_list)
 
@@ -359,6 +362,7 @@ class MusicPlayerApp(QWidget):
         self.track_list = QListWidget()
         self.track_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.track_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
+        self.track_list.setMaximumHeight(400)
         self.track_list.itemClicked.connect(self.play_selected_track)
         layout.addWidget(self.track_list)
 
@@ -375,12 +379,12 @@ class MusicPlayerApp(QWidget):
     def create_now_playing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 8)
-        layout.setSpacing(2)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(1)
 
         # Header with back button
         header = QWidget()
-        header.setFixedHeight(28)
+        header.setFixedHeight(24)
         h_layout = QHBoxLayout(header)
         h_layout.setContentsMargins(8, 2, 8, 2)
         
@@ -399,7 +403,7 @@ class MusicPlayerApp(QWidget):
         
         self.album_art = QLabel()
         self.album_art.setAlignment(Qt.AlignCenter)
-        self.album_art.setFixedSize(180, 180)  # Fixed size for 320px wide screen
+        self.album_art.setFixedSize(160, 160)  # Reduced for 320px wide screen
         self.album_art.setScaledContents(False)
         art_layout.addWidget(self.album_art, alignment=Qt.AlignCenter)
         
@@ -410,21 +414,21 @@ class MusicPlayerApp(QWidget):
         self.track_label.setAlignment(Qt.AlignCenter)
         self.track_label.setWordWrap(True)
         self.track_label.setStyleSheet(
-            "font-size: 13px; font-weight: 600; padding: 0 12px;"
+            "font-size: 12px; font-weight: 600; padding: 0 12px; max-height: 36px;"
         )
         layout.addWidget(self.track_label)
 
         self.artist_label = QLabel("")
         self.artist_label.setAlignment(Qt.AlignCenter)
         self.artist_label.setWordWrap(True)
-        self.artist_label.setStyleSheet("font-size: 10px; color: #666; padding: 0 12px;")
+        self.artist_label.setStyleSheet("font-size: 9px; color: #666; padding: 0 12px; max-height: 24px;")
         layout.addWidget(self.artist_label)
 
         # Progress slider
         slider_container = QWidget()
         slider_layout = QVBoxLayout(slider_container)
-        slider_layout.setContentsMargins(12, 0, 12, 0)
-        slider_layout.setSpacing(2)
+        slider_layout.setContentsMargins(12, 2, 12, 2)
+        slider_layout.setSpacing(1)
         
         self.progress = QSlider(Qt.Horizontal)
         self.progress.sliderMoved.connect(self.seek)
@@ -467,6 +471,7 @@ class MusicPlayerApp(QWidget):
         controls.addStretch()
 
         layout.addLayout(controls)
+        layout.addSpacing(4)  # Small bottom buffer
         
         return page
 
@@ -771,7 +776,7 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setText(f"{meta['artist']} • {meta['album']}")
 
         art = meta.get('art')
-        size = 180  # Fixed size for portrait screen
+        size = 160  # Reduced size for portrait screen
 
         if art:
             pix = QPixmap()
