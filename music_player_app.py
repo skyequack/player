@@ -78,8 +78,9 @@ class MusicPlayerApp(QWidget):
         }
 
         QListWidget::item {
-            padding: 6px 8px;
+            padding: 10px 12px;
             border-bottom: 1px solid #f0f0f0;
+            min-height: 44px;
         }
 
         QListWidget::item:selected {
@@ -159,7 +160,7 @@ class MusicPlayerApp(QWidget):
         header = QWidget()
         header.setFixedHeight(40)
         layout = QHBoxLayout(header)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(8, 6, 8, 6)
 
         back_btn = QPushButton("‹ Back")
         back_btn.setFixedWidth(60)
@@ -211,17 +212,23 @@ class MusicPlayerApp(QWidget):
         btn_exit.setFixedHeight(36)
         btn_exit.clicked.connect(self.close)
         layout.addWidget(btn_exit)
+        
+        layout.addSpacing(12)
 
         return page
 
     def create_albums_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         layout.addWidget(self.create_header("Albums",
                                             lambda: self.stack.setCurrentIndex(0)))
 
         self.album_list = QListWidget()
+        self.album_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.album_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.album_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.album_list)
 
@@ -230,11 +237,15 @@ class MusicPlayerApp(QWidget):
     def create_artists_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         layout.addWidget(self.create_header("Artists",
                                             lambda: self.stack.setCurrentIndex(0)))
 
         self.artist_list = QListWidget()
+        self.artist_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.artist_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.artist_list.itemClicked.connect(self.show_artist_albums)
         layout.addWidget(self.artist_list)
 
@@ -243,11 +254,15 @@ class MusicPlayerApp(QWidget):
     def create_favorites_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
 
         layout.addWidget(self.create_header("Favorites",
                                             lambda: self.stack.setCurrentIndex(0)))
 
         self.favorites_list = QListWidget()
+        self.favorites_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.favorites_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.favorites_list.itemClicked.connect(self.show_album_detail)
         layout.addWidget(self.favorites_list)
 
@@ -285,6 +300,8 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(header)
 
         self.track_list = QListWidget()
+        self.track_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.track_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
         self.track_list.itemClicked.connect(self.play_selected_track)
         layout.addWidget(self.track_list)
 
@@ -293,14 +310,14 @@ class MusicPlayerApp(QWidget):
     def create_now_playing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 6)
-        layout.setSpacing(6)
+        layout.setContentsMargins(0, 0, 0, 12)
+        layout.setSpacing(4)
 
         # Header with back button
         header = QWidget()
-        header.setFixedHeight(36)
+        header.setFixedHeight(32)
         h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(4, 4, 4, 4)
+        h_layout.setContentsMargins(8, 4, 8, 4)
         
         back_btn = QPushButton("‹")
         back_btn.setFixedSize(32, 28)
@@ -313,16 +330,15 @@ class MusicPlayerApp(QWidget):
         # Album art - fixed size for small portrait screen
         art_container = QWidget()
         art_layout = QVBoxLayout(art_container)
-        art_layout.setContentsMargins(20, 0, 20, 0)
+        art_layout.setContentsMargins(16, 0, 16, 0)
         
         self.album_art = QLabel()
         self.album_art.setAlignment(Qt.AlignCenter)
-        self.album_art.setFixedSize(220, 220)  # Fixed size for 320px wide screen
+        self.album_art.setFixedSize(200, 200)  # Fixed size for 320px wide screen
         self.album_art.setScaledContents(False)
         art_layout.addWidget(self.album_art, alignment=Qt.AlignCenter)
         
         layout.addWidget(art_container)
-        layout.addSpacing(2)
 
         # Track info
         self.track_label = QLabel("No track")
@@ -338,8 +354,6 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setWordWrap(True)
         self.artist_label.setStyleSheet("font-size: 10px; color: #666; padding: 0 12px;")
         layout.addWidget(self.artist_label)
-
-        layout.addSpacing(2)
 
         # Progress slider
         slider_container = QWidget()
@@ -363,7 +377,7 @@ class MusicPlayerApp(QWidget):
         controls.setSpacing(16)
 
         self.prev_btn = QPushButton("⏮")
-        self.play_btn = QPushButton("▶")
+        self.play_btn = QPushButton("►")
         self.next_btn = QPushButton("⏭")
 
         # Smaller buttons for compact layout
@@ -388,7 +402,6 @@ class MusicPlayerApp(QWidget):
         controls.addStretch()
 
         layout.addLayout(controls)
-        layout.addSpacing(4)
         
         return page
 
@@ -599,7 +612,7 @@ class MusicPlayerApp(QWidget):
         self.player.set_media(media)
         self.player.play()
 
-        self.play_btn.setText("⏸")
+        self.play_btn.setText("❚❚")
         self.update_now_playing(path)
 
     def update_now_playing(self, path):
@@ -608,7 +621,7 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setText(f"{meta['artist']} • {meta['album']}")
 
         art = meta.get('art')
-        size = 220  # Fixed size for portrait screen
+        size = 200  # Fixed size for portrait screen
 
         if art:
             pix = QPixmap()
@@ -639,10 +652,10 @@ class MusicPlayerApp(QWidget):
     def toggle_play(self):
         if self.player.is_playing():
             self.player.pause()
-            self.play_btn.setText("▶")
+            self.play_btn.setText("►")
         else:
             self.player.play()
-            self.play_btn.setText("⏸")
+            self.play_btn.setText("❚❚")
 
     def next_track(self):
         self.play_track((self.current_index + 1) % len(self.current_tracks))
