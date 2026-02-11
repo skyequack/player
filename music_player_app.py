@@ -293,17 +293,17 @@ class MusicPlayerApp(QWidget):
     def create_now_playing_page(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 8)
-        layout.setSpacing(8)
+        layout.setContentsMargins(0, 0, 0, 6)
+        layout.setSpacing(6)
 
         # Header with back button
         header = QWidget()
-        header.setFixedHeight(40)
+        header.setFixedHeight(36)
         h_layout = QHBoxLayout(header)
         h_layout.setContentsMargins(4, 4, 4, 4)
         
         back_btn = QPushButton("‹")
-        back_btn.setFixedSize(36, 32)
+        back_btn.setFixedSize(32, 28)
         back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(4))
         h_layout.addWidget(back_btn)
         h_layout.addStretch()
@@ -313,16 +313,16 @@ class MusicPlayerApp(QWidget):
         # Album art - fixed size for small portrait screen
         art_container = QWidget()
         art_layout = QVBoxLayout(art_container)
-        art_layout.setContentsMargins(24, 0, 24, 0)
+        art_layout.setContentsMargins(20, 0, 20, 0)
         
         self.album_art = QLabel()
         self.album_art.setAlignment(Qt.AlignCenter)
-        self.album_art.setFixedSize(240, 240)  # Fixed size for 320px wide screen
+        self.album_art.setFixedSize(220, 220)  # Fixed size for 320px wide screen
         self.album_art.setScaledContents(False)
         art_layout.addWidget(self.album_art, alignment=Qt.AlignCenter)
         
         layout.addWidget(art_container)
-        layout.addSpacing(4)
+        layout.addSpacing(2)
 
         # Track info
         self.track_label = QLabel("No track")
@@ -339,12 +339,12 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setStyleSheet("font-size: 10px; color: #666; padding: 0 12px;")
         layout.addWidget(self.artist_label)
 
-        layout.addSpacing(4)
+        layout.addSpacing(2)
 
         # Progress slider
         slider_container = QWidget()
         slider_layout = QVBoxLayout(slider_container)
-        slider_layout.setContentsMargins(16, 0, 16, 0)
+        slider_layout.setContentsMargins(12, 0, 12, 0)
         slider_layout.setSpacing(2)
         
         self.progress = QSlider(Qt.Horizontal)
@@ -360,20 +360,20 @@ class MusicPlayerApp(QWidget):
 
         # Control buttons
         controls = QHBoxLayout()
-        controls.setSpacing(20)
+        controls.setSpacing(16)
 
         self.prev_btn = QPushButton("⏮")
         self.play_btn = QPushButton("▶")
         self.next_btn = QPushButton("⏭")
 
         # Smaller buttons for compact layout
-        self.prev_btn.setFixedSize(44, 44)
-        self.play_btn.setFixedSize(52, 52)
-        self.next_btn.setFixedSize(44, 44)
+        self.prev_btn.setFixedSize(40, 40)
+        self.play_btn.setFixedSize(48, 48)
+        self.next_btn.setFixedSize(40, 40)
         
-        self.prev_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
-        self.play_btn.setStyleSheet("border-radius: 26px; font-size: 16px;")
-        self.next_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
+        self.prev_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
+        self.play_btn.setStyleSheet("border-radius: 24px; font-size: 15px;")
+        self.next_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
 
         self.play_btn.setObjectName("accent")
 
@@ -388,7 +388,7 @@ class MusicPlayerApp(QWidget):
         controls.addStretch()
 
         layout.addLayout(controls)
-        layout.addSpacing(8)
+        layout.addSpacing(4)
         
         return page
 
@@ -456,11 +456,11 @@ class MusicPlayerApp(QWidget):
                 meta['title'] = str(audio.get('TIT2', 'Unknown'))
                 if 'TIT2' in audio and hasattr(audio['TIT2'], 'text'):
                     meta['title'] = audio['TIT2'].text[0]
-                
+
                 meta['artist'] = str(audio.get('TPE1', 'Unknown Artist'))
                 if 'TPE1' in audio and hasattr(audio['TPE1'], 'text'):
                     meta['artist'] = audio['TPE1'].text[0]
-                
+
                 meta['album'] = str(audio.get('TALB', 'Unknown Album'))
                 if 'TALB' in audio and hasattr(audio['TALB'], 'text'):
                     meta['album'] = audio['TALB'].text[0]
@@ -474,8 +474,10 @@ class MusicPlayerApp(QWidget):
                         meta['track'] = 0
                 
                 # FIX: Extract album art from MP3
-                if 'APIC:' in audio:
-                    meta['art'] = audio['APIC:'].data
+                if audio.tags:
+                    apic_frames = audio.tags.getall('APIC')
+                    if apic_frames:
+                        meta['art'] = apic_frames[0].data
 
         except Exception:
             pass
@@ -574,7 +576,7 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setText(f"{meta['artist']} • {meta['album']}")
 
         art = meta.get('art')
-        size = 240  # Fixed size for portrait screen
+        size = 220  # Fixed size for portrait screen
 
         if art:
             pix = QPixmap()
