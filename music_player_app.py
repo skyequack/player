@@ -102,7 +102,7 @@ class MusicPlayerApp(QWidget):
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             padding: 4px 8px;
-            min-height: 30px;
+            min-height: 22px;
             font-size: 10px;
         }
 
@@ -229,7 +229,7 @@ class MusicPlayerApp(QWidget):
 
         for b in [btn_albums, btn_artists, btn_favorites]:
             b.setObjectName("accent")
-            b.setFixedHeight(44)
+            b.setFixedHeight(33)
 
         btn_albums.clicked.connect(lambda: self.stack.setCurrentIndex(1))
         btn_artists.clicked.connect(lambda: self.stack.setCurrentIndex(2))
@@ -242,7 +242,7 @@ class MusicPlayerApp(QWidget):
         layout.addStretch()
 
         btn_exit = QPushButton("Exit")
-        btn_exit.setFixedHeight(36)
+        btn_exit.setFixedHeight(27)
         btn_exit.clicked.connect(self.close)
         layout.addWidget(btn_exit)
         
@@ -450,13 +450,13 @@ class MusicPlayerApp(QWidget):
         self.next_btn = QPushButton("⏭")
 
         # Smaller buttons for compact layout
-        self.prev_btn.setFixedSize(36, 36)
-        self.play_btn.setFixedSize(44, 44)
-        self.next_btn.setFixedSize(36, 36)
+        self.prev_btn.setFixedSize(27, 27)
+        self.play_btn.setFixedSize(33, 33)
+        self.next_btn.setFixedSize(27, 27)
         
-        self.prev_btn.setStyleSheet("border-radius: 18px; font-size: 12px;")
-        self.play_btn.setStyleSheet("border-radius: 22px; font-size: 14px;")
-        self.next_btn.setStyleSheet("border-radius: 18px; font-size: 12px;")
+        self.prev_btn.setStyleSheet("border-radius: 14px; font-size: 12px;")
+        self.play_btn.setStyleSheet("border-radius: 17px; font-size: 14px;")
+        self.next_btn.setStyleSheet("border-radius: 14px; font-size: 12px;")
 
         self.play_btn.setObjectName("accent")
 
