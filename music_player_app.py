@@ -38,6 +38,7 @@ class MusicPlayerApp(QWidget):
         self.current_album = None
         self.current_index = -1
         self.current_art_size = 300
+        self.track_ending = False  # FIX: Prevent duplicate auto-advance
 
         self.showFullScreen()
         self.set_minimal_theme()
@@ -384,13 +385,42 @@ class MusicPlayerApp(QWidget):
                 meta['title'] = audio.get('title', ['Unknown'])[0]
                 meta['artist'] = audio.get('artist', ['Unknown Artist'])[0]
                 meta['album'] = audio.get('album', ['Unknown Album'])[0]
+                # FIX: Extract track number from FLAC
+                track_num = audio.get('tracknumber', ['0'])[0]
+                try:
+                    # Handle "1/10" format
+                    meta['track'] = int(str(track_num).split('/')[0])
+                except (ValueError, IndexError):
+                    meta['track'] = 0
+                
                 if audio.pictures:
                     meta['art'] = audio.pictures[0].data
 
             elif isinstance(audio, MP3):
+                # FIX: Properly access MP3 ID3 tags
                 meta['title'] = str(audio.get('TIT2', 'Unknown'))
+                if 'TIT2' in audio and hasattr(audio['TIT2'], 'text'):
+                    meta['title'] = audio['TIT2'].text[0]
+                
                 meta['artist'] = str(audio.get('TPE1', 'Unknown Artist'))
+                if 'TPE1' in audio and hasattr(audio['TPE1'], 'text'):
+                    meta['artist'] = audio['TPE1'].text[0]
+                
                 meta['album'] = str(audio.get('TALB', 'Unknown Album'))
+                if 'TALB' in audio and hasattr(audio['TALB'], 'text'):
+                    meta['album'] = audio['TALB'].text[0]
+                
+                # FIX: Extract track number from MP3
+                if 'TRCK' in audio and hasattr(audio['TRCK'], 'text'):
+                    track_num = audio['TRCK'].text[0]
+                    try:
+                        meta['track'] = int(str(track_num).split('/')[0])
+                    except (ValueError, IndexError):
+                        meta['track'] = 0
+                
+                # FIX: Extract album art from MP3
+                if 'APIC:' in audio:
+                    meta['art'] = audio['APIC:'].data
 
         except Exception:
             pass
@@ -435,6 +465,9 @@ class MusicPlayerApp(QWidget):
         artist = self.album_metadata[album]['artist']
         self.detail_album_label.setText(f"{album}\n{artist}")
 
+        # FIX: Update favorite button to show current state
+        self.update_favorite_button()
+
         self.track_list.clear()
         for i, path in enumerate(self.current_tracks):
             meta = self.get_metadata(path)
@@ -470,6 +503,7 @@ class MusicPlayerApp(QWidget):
             return
 
         self.current_index = index
+        self.track_ending = False  # FIX: Reset flag when playing new track
         path = self.current_tracks[index]
 
         media = self.instance.media_new(path)
@@ -541,7 +575,9 @@ class MusicPlayerApp(QWidget):
             f"{self.format_time(cur)} / {self.format_time(length)}"
         )
 
-        if cur >= length - 500 and self.player.is_playing():
+        # FIX: Prevent duplicate auto-advance with flag
+        if cur >= length - 500 and self.player.is_playing() and not self.track_ending:
+            self.track_ending = True
             self.next_track()
 
     def format_time(self, ms):
@@ -560,6 +596,15 @@ class MusicPlayerApp(QWidget):
 
         self.save_favorites()
         self.update_favorites_list()
+        # FIX: Update button after toggling
+        self.update_favorite_button()
+
+    def update_favorite_button(self):
+        """FIX: Update favorite button to show filled/unfilled heart"""
+        if self.current_album in self.favorites:
+            self.favorite_btn.setText("♥")  # Filled heart
+        else:
+            self.favorite_btn.setText("♡")  # Empty heart
 
     def load_favorites(self):
         if os.path.exists(self.favorites_file):
