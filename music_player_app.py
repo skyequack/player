@@ -21,9 +21,9 @@ class MusicPlayerApp(QWidget):
         self.music_root = music_root
         self.favorites_file = os.path.expanduser("~/.music_player_favorites.json")
 
-    # Landscape screen dimensions
-    self.SCREEN_WIDTH = 480
-    self.SCREEN_HEIGHT = 320
+        # Landscape screen dimensions
+        self.SCREEN_WIDTH = 480
+        self.SCREEN_HEIGHT = 320
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
@@ -42,20 +42,20 @@ class MusicPlayerApp(QWidget):
         self.now_playing_sidebars = []
         self.sidebar_play_buttons = []
 
-    # Pagination state
-    self.albums_per_page = 8
-    self.artists_per_page = 14
-    self.favorites_per_page = 10
-    self.tracks_per_page = 10
-    self.album_page = 0
-    self.artist_page = 0
-    self.favorites_page = 0
-    self.track_page = 0
-    self.all_albums = []
-    self.all_artists = []
-    self.all_tracks_data = []
+        # Pagination state
+        self.albums_per_page = 8
+        self.artists_per_page = 14
+        self.favorites_per_page = 10
+        self.tracks_per_page = 10
+        self.album_page = 0
+        self.artist_page = 0
+        self.favorites_page = 0
+        self.track_page = 0
+        self.all_albums = []
+        self.all_artists = []
+        self.all_tracks_data = []
 
-    # Set fixed size for landscape display
+        # Set fixed size for landscape display
         self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
         self.setWindowTitle("Music Player")
 
