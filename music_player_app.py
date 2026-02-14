@@ -174,9 +174,9 @@ class MusicPlayerApp(QWidget):
 
     def create_header(self, title, back_action):
         header = QWidget()
-        header.setFixedHeight(10)
+        header.setFixedHeight(28)
         layout = QHBoxLayout(header)
-        layout.setContentsMargins(8, 6, 8, 6)
+        layout.setContentsMargins(8, 4, 8, 4)
 
         back_btn = QPushButton("‹ Back")
         back_btn.setFixedWidth(60)
@@ -372,13 +372,9 @@ class MusicPlayerApp(QWidget):
         preview_layout.addStretch()
 
         preview_actions = QHBoxLayout()
-        self.album_open_btn = QPushButton("Open")
         self.album_play_btn = QPushButton("Play")
-        self.album_open_btn.setEnabled(False)
         self.album_play_btn.setEnabled(False)
-        self.album_open_btn.clicked.connect(self.open_preview_album)
         self.album_play_btn.clicked.connect(self.play_preview_album)
-        preview_actions.addWidget(self.album_open_btn)
         preview_actions.addWidget(self.album_play_btn)
         preview_layout.addLayout(preview_actions)
 
@@ -398,7 +394,6 @@ class MusicPlayerApp(QWidget):
         self.set_album_preview(None, self.album_preview_art,
                        self.album_preview_title,
                        self.album_preview_artist,
-                       self.album_open_btn,
                        self.album_play_btn,
                        160,
                        "Select an album")
@@ -516,13 +511,9 @@ class MusicPlayerApp(QWidget):
         preview_layout.addStretch()
 
         preview_actions = QHBoxLayout()
-        self.favorites_open_btn = QPushButton("Open")
         self.favorites_play_btn = QPushButton("Play")
-        self.favorites_open_btn.setEnabled(False)
         self.favorites_play_btn.setEnabled(False)
-        self.favorites_open_btn.clicked.connect(self.open_favorites_preview)
         self.favorites_play_btn.clicked.connect(self.play_favorites_preview)
-        preview_actions.addWidget(self.favorites_open_btn)
         preview_actions.addWidget(self.favorites_play_btn)
         preview_layout.addLayout(preview_actions)
 
@@ -542,7 +533,6 @@ class MusicPlayerApp(QWidget):
         self.set_album_preview(None, self.favorites_preview_art,
                        self.favorites_preview_title,
                        self.favorites_preview_artist,
-                       self.favorites_open_btn,
                        self.favorites_play_btn,
                        160,
                        "Select a favorite")
@@ -902,7 +892,6 @@ class MusicPlayerApp(QWidget):
             self.set_album_preview(None, self.album_preview_art,
                                    self.album_preview_title,
                                    self.album_preview_artist,
-                                   self.album_open_btn,
                                    self.album_play_btn,
                                    160,
                                    "Select an album")
@@ -944,7 +933,6 @@ class MusicPlayerApp(QWidget):
         self.set_album_preview(None, self.favorites_preview_art,
                                self.favorites_preview_title,
                                self.favorites_preview_artist,
-                               self.favorites_open_btn,
                                self.favorites_play_btn,
                                160,
                                "Select a favorite")
@@ -1012,11 +1000,10 @@ class MusicPlayerApp(QWidget):
         self.show_albums_page()
 
     def set_album_preview(self, album, art_label, title_label, artist_label,
-                          open_btn, play_btn, size, empty_title):
+                          play_btn, size, empty_title):
         if not album or album not in self.album_metadata:
             title_label.setText(empty_title)
             artist_label.setText("")
-            open_btn.setEnabled(False)
             play_btn.setEnabled(False)
             self.set_preview_art(art_label, None, size)
             return
@@ -1025,7 +1012,6 @@ class MusicPlayerApp(QWidget):
         title_label.setText(album)
         artist_label.setText(meta.get('artist', 'Unknown Artist'))
         self.set_preview_art(art_label, meta.get('art'), size)
-        open_btn.setEnabled(True)
         play_btn.setEnabled(True)
 
     def set_preview_art(self, target_label, art, size):
@@ -1061,7 +1047,6 @@ class MusicPlayerApp(QWidget):
         self.set_album_preview(album, self.album_preview_art,
                        self.album_preview_title,
                        self.album_preview_artist,
-                       self.album_open_btn,
                        self.album_play_btn,
                        160,
                        "Select an album")
@@ -1072,22 +1057,13 @@ class MusicPlayerApp(QWidget):
         self.set_album_preview(album, self.favorites_preview_art,
                        self.favorites_preview_title,
                        self.favorites_preview_artist,
-                       self.favorites_open_btn,
                        self.favorites_play_btn,
                        160,
                        "Select a favorite")
 
-    def open_preview_album(self):
-        if self.album_preview_album:
-            self.open_album(self.album_preview_album)
-
     def play_preview_album(self):
         if self.album_preview_album:
             self.play_album(self.album_preview_album)
-
-    def open_favorites_preview(self):
-        if self.favorites_preview_album:
-            self.open_album(self.favorites_preview_album)
 
     def play_favorites_preview(self):
         if self.favorites_preview_album:
