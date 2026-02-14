@@ -44,10 +44,10 @@ class MusicPlayerApp(QWidget):
         self.side_stacks = []
 
         # Pagination state
-        self.albums_per_page = 5
-        self.artists_per_page = 6
+        self.albums_per_page = 4
+        self.artists_per_page = 7
         self.favorites_per_page = 5
-        self.tracks_per_page = 6
+        self.tracks_per_page = 7
         self.album_page = 0
         self.artist_page = 0
         self.favorites_page = 0
@@ -74,7 +74,7 @@ class MusicPlayerApp(QWidget):
         return px
 
     def touch_height(self):
-        return 32
+        return 22
 
     # ---------- Theme ----------
     def set_minimal_theme(self):
@@ -104,27 +104,26 @@ class MusicPlayerApp(QWidget):
         }
 
         QPushButton {
-            background-color: #f8f8f8;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 4px 8px;
-            min-height: 28px;
+            background-color: transparent;
+            border: none;
+            padding: 0px 2px;
+            min-height: 20px;
             font-size: 11px;
         }
 
         QPushButton:pressed {
-            background-color: #e8e8e8;
+            color: #555555;
         }
 
         QPushButton#accent {
-            background-color: #007AFF;
-            color: white;
+            background-color: transparent;
+            color: #007AFF;
             border: none;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         QPushButton#accent:pressed {
-            background-color: #0051D5;
+            color: #0051D5;
         }
 
         QSlider::groove:horizontal {
@@ -175,7 +174,7 @@ class MusicPlayerApp(QWidget):
 
     def create_header(self, title, back_action):
         header = QWidget()
-        header.setFixedHeight(32)
+        header.setFixedHeight(10)
         layout = QHBoxLayout(header)
         layout.setContentsMargins(8, 6, 8, 6)
 
@@ -196,47 +195,34 @@ class MusicPlayerApp(QWidget):
 
     def create_now_playing_sidebar(self):
         container = QWidget()
-        container.setStyleSheet(
-            "background-color: #fafafa; border: 1px solid #ededed; "
-            "border-radius: 8px;"
-        )
-        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        container.setStyleSheet("background-color: #ffffff;")
+        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         layout = QVBoxLayout(container)
-        layout.setContentsMargins(6, 6, 6, 6)
-        layout.setSpacing(4)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(6)
 
         title = QLabel("Now Playing")
-        title.setStyleSheet("font-size: 11px; font-weight: 600;")
+        title.setStyleSheet("font-size: 9px; color: #888; letter-spacing: 0.5px;")
         layout.addWidget(title)
-
-        row = QHBoxLayout()
-        row.setSpacing(6)
 
         art = QLabel()
         art.setAlignment(Qt.AlignCenter)
-        art.setFixedSize(56, 56)
-        row.addWidget(art)
-
-        text_col = QVBoxLayout()
-        text_col.setSpacing(2)
+        art.setFixedSize(180, 180)
+        layout.addWidget(art, alignment=Qt.AlignCenter)
 
         track = QLabel("Nothing playing")
         track.setWordWrap(True)
-        track.setStyleSheet("font-size: 11px; font-weight: 600;")
-        text_col.addWidget(track)
+        track.setStyleSheet("font-size: 13px; font-weight: 600;")
+        layout.addWidget(track)
 
         artist = QLabel("")
         artist.setWordWrap(True)
-        artist.setStyleSheet("font-size: 10px; color: #666;")
-        text_col.addWidget(artist)
-
-        row.addLayout(text_col)
-        row.addStretch()
-        layout.addLayout(row)
+        artist.setStyleSheet("font-size: 10px; color: #777;")
+        layout.addWidget(artist)
 
         controls = QHBoxLayout()
-        controls.setSpacing(6)
+        controls.setSpacing(8)
 
         prev_btn = QPushButton("⏮")
         play_btn = QPushButton("▶")
@@ -244,7 +230,7 @@ class MusicPlayerApp(QWidget):
 
         for btn in [prev_btn, play_btn, next_btn]:
             btn.setFixedSize(28, 24)
-            btn.setStyleSheet("border-radius: 6px; font-size: 10px;")
+            btn.setStyleSheet("border-radius: 6px; font-size: 11px;")
 
         prev_btn.clicked.connect(self.prev_track)
         play_btn.clicked.connect(self.toggle_play)
@@ -253,7 +239,6 @@ class MusicPlayerApp(QWidget):
         controls.addWidget(prev_btn)
         controls.addWidget(play_btn)
         controls.addWidget(next_btn)
-        controls.addStretch()
         layout.addLayout(controls)
 
         self.now_playing_sidebars.append({
@@ -262,7 +247,7 @@ class MusicPlayerApp(QWidget):
             "artist": artist
         })
         self.sidebar_play_buttons.append(play_btn)
-        self.set_preview_art(art, None, 56)
+        self.set_preview_art(art, None, 180)
 
         return container
 
@@ -352,12 +337,15 @@ class MusicPlayerApp(QWidget):
         content = QHBoxLayout()
         content.setSpacing(10)
 
+        left_col = QVBoxLayout()
+        left_col.setSpacing(4)
+
         self.album_list = QListWidget()
         self.album_list.itemClicked.connect(self.update_album_preview)
         self.album_list.itemDoubleClicked.connect(self.show_album_detail)
         self.album_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.album_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        content.addWidget(self.album_list, 3)
+        left_col.addWidget(self.album_list)
 
         preview = QWidget()
         preview_layout = QVBoxLayout(preview)
@@ -421,7 +409,11 @@ class MusicPlayerApp(QWidget):
             lambda: self.next_page('albums')
         )
         self.album_page_label = footer.findChild(QLabel, "page_label")
-        layout.addWidget(footer)
+        left_col.addWidget(footer)
+
+        content.addLayout(left_col, 3)
+
+        layout.addLayout(content)
 
         return page
 
@@ -437,12 +429,14 @@ class MusicPlayerApp(QWidget):
         content = QHBoxLayout()
         content.setSpacing(10)
 
+        left_col = QVBoxLayout()
+        left_col.setSpacing(4)
+
         self.artist_list = QListWidget()
         self.artist_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.artist_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.artist_list.setMaximumHeight(340)
         self.artist_list.itemClicked.connect(self.show_artist_albums)
-        content.addWidget(self.artist_list, 2)
+        left_col.addWidget(self.artist_list)
 
         right_panel = QWidget()
         right_layout = QVBoxLayout(right_panel)
@@ -462,15 +456,16 @@ class MusicPlayerApp(QWidget):
 
         content.addWidget(right_panel, 3)
 
-        layout.addLayout(content)
-
         # Pagination footer
         footer = self.create_pagination_footer(
             lambda: self.prev_page('artists'),
             lambda: self.next_page('artists')
         )
         self.artist_page_label = footer.findChild(QLabel, "page_label")
-        layout.addWidget(footer)
+        left_col.addWidget(footer)
+
+        content.addLayout(left_col, 2)
+        layout.addLayout(content)
 
         return page
 
@@ -486,12 +481,15 @@ class MusicPlayerApp(QWidget):
         content = QHBoxLayout()
         content.setSpacing(10)
 
+        left_col = QVBoxLayout()
+        left_col.setSpacing(4)
+
         self.favorites_list = QListWidget()
         self.favorites_list.itemClicked.connect(self.update_favorites_preview)
         self.favorites_list.itemDoubleClicked.connect(self.show_album_detail)
         self.favorites_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.favorites_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        content.addWidget(self.favorites_list, 3)
+        left_col.addWidget(self.favorites_list)
 
         preview = QWidget()
         preview_layout = QVBoxLayout(preview)
@@ -555,7 +553,11 @@ class MusicPlayerApp(QWidget):
             lambda: self.next_page('favorites')
         )
         self.favorites_page_label = footer.findChild(QLabel, "page_label")
-        layout.addWidget(footer)
+        left_col.addWidget(footer)
+
+        content.addLayout(left_col, 3)
+
+        layout.addLayout(content)
 
         return page
 
