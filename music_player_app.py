@@ -41,12 +41,13 @@ class MusicPlayerApp(QWidget):
         self.track_ending = False
         self.now_playing_sidebars = []
         self.sidebar_play_buttons = []
+        self.side_stacks = []
 
         # Pagination state
-        self.albums_per_page = 8
-        self.artists_per_page = 14
-        self.favorites_per_page = 10
-        self.tracks_per_page = 10
+        self.albums_per_page = 5
+        self.artists_per_page = 6
+        self.favorites_per_page = 5
+        self.tracks_per_page = 6
         self.album_page = 0
         self.artist_page = 0
         self.favorites_page = 0
@@ -170,6 +171,8 @@ class MusicPlayerApp(QWidget):
         ]:
             self.stack.addWidget(p)
 
+        self.update_side_views()
+
     def create_header(self, title, back_action):
         header = QWidget()
         header.setFixedHeight(32)
@@ -197,7 +200,7 @@ class MusicPlayerApp(QWidget):
             "background-color: #fafafa; border: 1px solid #ededed; "
             "border-radius: 8px;"
         )
-        container.setFixedHeight(120)
+        container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         layout = QVBoxLayout(container)
         layout.setContentsMargins(6, 6, 6, 6)
@@ -391,10 +394,15 @@ class MusicPlayerApp(QWidget):
         preview_actions.addWidget(self.album_play_btn)
         preview_layout.addLayout(preview_actions)
 
-        preview_layout.addSpacing(4)
-        preview_layout.addWidget(self.create_now_playing_sidebar())
+        now_playing = self.create_now_playing_sidebar()
 
-        content.addWidget(preview, 2)
+        self.album_side_stack = QStackedWidget()
+        self.album_side_stack.addWidget(preview)
+        self.album_side_stack.addWidget(now_playing)
+        self.album_side_stack.setCurrentIndex(0)
+        self.side_stacks.append(self.album_side_stack)
+
+        content.addWidget(self.album_side_stack, 2)
 
         layout.addLayout(content)
 
@@ -520,10 +528,15 @@ class MusicPlayerApp(QWidget):
         preview_actions.addWidget(self.favorites_play_btn)
         preview_layout.addLayout(preview_actions)
 
-        preview_layout.addSpacing(4)
-        preview_layout.addWidget(self.create_now_playing_sidebar())
+        now_playing = self.create_now_playing_sidebar()
 
-        content.addWidget(preview, 2)
+        self.favorites_side_stack = QStackedWidget()
+        self.favorites_side_stack.addWidget(preview)
+        self.favorites_side_stack.addWidget(now_playing)
+        self.favorites_side_stack.setCurrentIndex(0)
+        self.side_stacks.append(self.favorites_side_stack)
+
+        content.addWidget(self.favorites_side_stack, 2)
 
         layout.addLayout(content)
 
@@ -1127,6 +1140,7 @@ class MusicPlayerApp(QWidget):
             self.set_placeholder_art(size)
 
         self.update_now_playing_sidebars(meta)
+        self.update_side_views()
 
     def set_placeholder_art(self, size):
         self.album_art.setPixmap(self.render_placeholder_pixmap(size))
@@ -1143,6 +1157,11 @@ class MusicPlayerApp(QWidget):
             size = sidebar['art'].width() or 56
             self.set_preview_art(sidebar['art'], art, size)
 
+    def update_side_views(self):
+        show_now_playing = self.player.is_playing()
+        for stack in self.side_stacks:
+            stack.setCurrentIndex(1 if show_now_playing else 0)
+
     def set_play_button_state(self, is_playing):
         text = "⏸" if is_playing else "▶"
         self.play_btn.setText(text)
@@ -1156,6 +1175,8 @@ class MusicPlayerApp(QWidget):
         else:
             self.player.play()
             self.set_play_button_state(True)
+
+        self.update_side_views()
 
     def next_track(self):
         self.play_track((self.current_index + 1) % len(self.current_tracks))
