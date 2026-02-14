@@ -23,7 +23,7 @@ class MusicPlayerApp(QWidget):
 
         # Landscape screen dimensions
         self.SCREEN_WIDTH = 480
-        self.SCREEN_HEIGHT = 260
+        self.SCREEN_HEIGHT = 270
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
@@ -42,6 +42,8 @@ class MusicPlayerApp(QWidget):
         self.now_playing_sidebars = []
         self.sidebar_play_buttons = []
         self.side_stacks = []
+        self.artist_list_mode = "artists"
+        self.current_artist = None
 
         # Pagination state
         self.albums_per_page = 4
@@ -331,14 +333,15 @@ class MusicPlayerApp(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        layout.addWidget(self.create_header("Albums",
-                                            lambda: self.stack.setCurrentIndex(0)))
-
         content = QHBoxLayout()
         content.setSpacing(10)
 
         left_col = QVBoxLayout()
         left_col.setSpacing(4)
+
+        left_col.addWidget(self.create_header(
+            "Albums", lambda: self.stack.setCurrentIndex(0)
+        ))
 
         self.album_list = QListWidget()
         self.album_list.itemClicked.connect(self.update_album_preview)
@@ -386,10 +389,6 @@ class MusicPlayerApp(QWidget):
         self.album_side_stack.setCurrentIndex(0)
         self.side_stacks.append(self.album_side_stack)
 
-        content.addWidget(self.album_side_stack, 2)
-
-        layout.addLayout(content)
-
         self.album_preview_album = None
         self.set_album_preview(None, self.album_preview_art,
                        self.album_preview_title,
@@ -407,6 +406,7 @@ class MusicPlayerApp(QWidget):
         left_col.addWidget(footer)
 
         content.addLayout(left_col, 3)
+        content.addWidget(self.album_side_stack, 2)
 
         layout.addLayout(content)
 
@@ -418,8 +418,26 @@ class MusicPlayerApp(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        layout.addWidget(self.create_header("Artists",
-                                            lambda: self.stack.setCurrentIndex(0)))
+        header = QWidget()
+        header.setFixedHeight(28)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(8, 4, 8, 4)
+
+        back_btn = QPushButton("‹ Back")
+        back_btn.setFixedWidth(60)
+        back_btn.clicked.connect(self.handle_artists_back)
+        header_layout.addWidget(back_btn)
+
+        self.artists_title_label = QLabel("Artists")
+        self.artists_title_label.setAlignment(Qt.AlignCenter)
+        self.artists_title_label.setStyleSheet("font-size: 12px; font-weight: 600;")
+        header_layout.addWidget(self.artists_title_label, 1)
+
+        spacer = QLabel()
+        spacer.setFixedWidth(60)
+        header_layout.addWidget(spacer)
+
+        layout.addWidget(header)
 
         content = QHBoxLayout()
         content.setSpacing(10)
@@ -430,26 +448,9 @@ class MusicPlayerApp(QWidget):
         self.artist_list = QListWidget()
         self.artist_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.artist_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.artist_list.itemClicked.connect(self.show_artist_albums)
+        self.artist_list.itemClicked.connect(self.handle_artist_item_clicked)
+        self.artist_list.itemDoubleClicked.connect(self.show_album_detail)
         left_col.addWidget(self.artist_list)
-
-        right_panel = QWidget()
-        right_layout = QVBoxLayout(right_panel)
-        right_layout.setContentsMargins(8, 8, 8, 8)
-        right_layout.setSpacing(6)
-
-        self.artist_album_header = QLabel("Select an artist")
-        self.artist_album_header.setStyleSheet("font-size: 13px; font-weight: 600;")
-        right_layout.addWidget(self.artist_album_header)
-
-        self.artist_album_list = QListWidget()
-        self.artist_album_list.itemDoubleClicked.connect(self.show_album_detail)
-        right_layout.addWidget(self.artist_album_list)
-
-        right_layout.addSpacing(4)
-        right_layout.addWidget(self.create_now_playing_sidebar())
-
-        content.addWidget(right_panel, 3)
 
         # Pagination footer
         footer = self.create_pagination_footer(
@@ -457,6 +458,7 @@ class MusicPlayerApp(QWidget):
             lambda: self.next_page('artists')
         )
         self.artist_page_label = footer.findChild(QLabel, "page_label")
+        self.artist_footer = footer
         left_col.addWidget(footer)
 
         content.addLayout(left_col, 2)
@@ -525,10 +527,6 @@ class MusicPlayerApp(QWidget):
         self.favorites_side_stack.setCurrentIndex(0)
         self.side_stacks.append(self.favorites_side_stack)
 
-        content.addWidget(self.favorites_side_stack, 2)
-
-        layout.addLayout(content)
-
         self.favorites_preview_album = None
         self.set_album_preview(None, self.favorites_preview_art,
                        self.favorites_preview_title,
@@ -546,6 +544,7 @@ class MusicPlayerApp(QWidget):
         left_col.addWidget(footer)
 
         content.addLayout(left_col, 3)
+        content.addWidget(self.favorites_side_stack, 2)
 
         layout.addLayout(content)
 
@@ -909,8 +908,9 @@ class MusicPlayerApp(QWidget):
 
         total_pages = max(1, (len(self.all_artists) + self.artists_per_page - 1) // self.artists_per_page)
         self.artist_page_label.setText(f"Page {self.artist_page + 1}/{total_pages}")
-        self.artist_album_header.setText("Select an artist")
-        self.artist_album_list.clear()
+        self.artist_list_mode = "artists"
+        if hasattr(self, "artists_title_label"):
+            self.artists_title_label.setText("Artists")
 
     def update_favorites_page(self):
         self.favorites_list.clear()
@@ -987,14 +987,41 @@ class MusicPlayerApp(QWidget):
 
     def show_artist_albums(self, item):
         artist = item.data(Qt.UserRole)
-        self.artist_album_header.setText(f"Albums • {artist}")
-        self.artist_album_list.clear()
+        self.artist_list_mode = "albums"
+        self.current_artist = artist
+        if hasattr(self, "artists_title_label"):
+            self.artists_title_label.setText(f"Albums • {artist}")
+        self.artist_list.clear()
 
         for album in self.artists[artist]:
             art = self.album_metadata[album]['artist']
             it = QListWidgetItem(f"{album}\n{art}")
             it.setData(Qt.UserRole, album)
-            self.artist_album_list.addItem(it)
+            self.artist_list.addItem(it)
+
+        if hasattr(self, "artist_footer"):
+            self.artist_footer.setVisible(False)
+
+    def show_artist_list(self):
+        self.artist_list_mode = "artists"
+        self.current_artist = None
+        if hasattr(self, "artists_title_label"):
+            self.artists_title_label.setText("Artists")
+        self.update_artist_page()
+        if hasattr(self, "artist_footer"):
+            self.artist_footer.setVisible(True)
+
+    def handle_artists_back(self):
+        if self.artist_list_mode == "albums":
+            self.show_artist_list()
+        else:
+            self.stack.setCurrentIndex(0)
+
+    def handle_artist_item_clicked(self, item):
+        if self.artist_list_mode == "artists":
+            self.show_artist_albums(item)
+        else:
+            self.show_album_detail(item)
 
     def go_back_from_detail(self):
         self.show_albums_page()
@@ -1157,9 +1184,13 @@ class MusicPlayerApp(QWidget):
         self.update_side_views()
 
     def next_track(self):
+        if not self.current_tracks:
+            return
         self.play_track((self.current_index + 1) % len(self.current_tracks))
 
     def prev_track(self):
+        if not self.current_tracks:
+            return
         self.play_track((self.current_index - 1) % len(self.current_tracks))
 
     # ---------- Progress ----------
