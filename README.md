@@ -31,10 +31,17 @@ A full-featured, touch-friendly music player designed for Raspberry Pi with a 48
 ## Installation
 
 ### Requirements
+
+**For Raspberry Pi/Linux:**
 ```bash
 sudo apt-get update
 sudo apt-get install python3-pyqt5 python3-vlc
 pip3 install python-vlc mutagen
+```
+
+**For Windows:**
+```bash
+pip install PyQt5 python-vlc mutagen pycaw comtypes
 ```
 
 ### Quick Install

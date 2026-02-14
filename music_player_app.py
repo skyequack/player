@@ -28,9 +28,12 @@ class MusicPlayerApp(QWidget):
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
         self.player = self.instance.media_player_new()
-        self.volume = 70
+        self.volume = self.get_system_volume()
         self.player.audio_set_volume(self.volume)
         self.theme = "light"
+        
+        # Playback state
+        self.is_playing_music = False
 
         # Data
         self.albums = {}
@@ -81,11 +84,46 @@ class MusicPlayerApp(QWidget):
     def touch_height(self):
         return 22
 
+    def get_system_volume(self):
+        """Get current system volume (Windows) or default to 70"""
+        try:
+            from ctypes import cast, POINTER
+            from comtypes import CLSCTX_ALL
+            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+            
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume_interface = cast(interface, POINTER(IAudioEndpointVolume))
+            
+            current = volume_interface.GetMasterVolumeLevelScalar()
+            return int(current * 100)
+        except Exception:
+            return 70
+
     def adjust_volume(self, delta):
-        self.volume = max(0, min(100, self.volume + delta))
-        self.player.audio_set_volume(self.volume)
-        if hasattr(self, "volume_label"):
-            self.volume_label.setText(f"{self.volume}%")
+        """Adjust system volume on Windows"""
+        try:
+            from ctypes import cast, POINTER
+            from comtypes import CLSCTX_ALL
+            from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+            
+            devices = AudioUtilities.GetSpeakers()
+            interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+            volume_interface = cast(interface, POINTER(IAudioEndpointVolume))
+            
+            current = volume_interface.GetMasterVolumeLevelScalar()
+            new_volume = max(0.0, min(1.0, current + (delta / 100.0)))
+            volume_interface.SetMasterVolumeLevelScalar(new_volume, None)
+            
+            self.volume = int(new_volume * 100)
+            if hasattr(self, "volume_label"):
+                self.volume_label.setText(f"{self.volume}%")
+        except Exception:
+            # Fallback to VLC volume if system volume fails
+            self.volume = max(0, min(100, self.volume + delta))
+            self.player.audio_set_volume(self.volume)
+            if hasattr(self, "volume_label"):
+                self.volume_label.setText(f"{self.volume}%")
 
     def update_theme_toggle_label(self):
         if hasattr(self, "theme_toggle_btn"):
@@ -412,6 +450,14 @@ class MusicPlayerApp(QWidget):
         btn_exit.clicked.connect(self.close)
         left_col.addWidget(btn_exit)
 
+        # Now playing sidebar on landing page
+        landing_now_playing = self.create_now_playing_sidebar()
+        self.landing_side_stack = QStackedWidget()
+        self.landing_side_stack.addWidget(QWidget())  # Empty widget when not playing
+        self.landing_side_stack.addWidget(landing_now_playing)
+        self.landing_side_stack.setCurrentIndex(0)
+        self.side_stacks.append(self.landing_side_stack)
+
         right_col = QVBoxLayout()
         right_col.setSpacing(10)
 
@@ -433,6 +479,7 @@ class MusicPlayerApp(QWidget):
         right_col.addStretch()
 
         layout.addLayout(left_col, 1)
+        layout.addWidget(self.landing_side_stack, 1)
         layout.addLayout(right_col, 1)
 
         return page
@@ -694,7 +741,6 @@ class MusicPlayerApp(QWidget):
         self.track_list = QListWidget()
         self.track_list.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.track_list.setVerticalScrollMode(QListWidget.ScrollPerPixel)
-        self.track_list.setMaximumHeight(340)
         self.track_list.itemClicked.connect(self.play_selected_track)
         layout.addWidget(self.track_list)
 
@@ -1227,6 +1273,7 @@ class MusicPlayerApp(QWidget):
 
         self.current_index = index
         self.track_ending = False  # FIX: Reset flag when playing new track
+        self.is_playing_music = True
         path = self.current_tracks[index]
 
         media = self.instance.media_new(path)
@@ -1273,7 +1320,8 @@ class MusicPlayerApp(QWidget):
             self.set_preview_art(sidebar['art'], art, size)
 
     def update_side_views(self):
-        show_now_playing = self.player.is_playing()
+        """Update all sidebar stacks based on playback state"""
+        show_now_playing = self.is_playing_music and (self.player.is_playing() or self.player.get_state() == vlc.State.Paused)
         for stack in self.side_stacks:
             stack.setCurrentIndex(1 if show_now_playing else 0)
 
@@ -1288,9 +1336,10 @@ class MusicPlayerApp(QWidget):
             self.player.pause()
             self.set_play_button_state(False)
         else:
-            self.player.play()
-            self.set_play_button_state(True)
-
+            if self.is_playing_music:
+                self.player.play()
+                self.set_play_button_state(True)
+        
         self.update_side_views()
 
     def next_track(self):
