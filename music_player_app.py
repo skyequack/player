@@ -132,6 +132,19 @@ class MusicPlayerApp(QWidget):
             font-weight: 600;
         }
 
+        QPushButton#volume {
+            background-color: #f2f2f2;
+            border: 1px solid #dddddd;
+            border-radius: 10px;
+            padding: 2px 10px;
+            min-height: 30px;
+            font-size: 12px;
+        }
+
+        QPushButton#volume:pressed {
+            background-color: #e6e6e6;
+        }
+
         QPushButton#accent:pressed {
             color: #0051D5;
         }
@@ -308,6 +321,10 @@ class MusicPlayerApp(QWidget):
 
         vol_down = QPushButton("Vol -")
         vol_up = QPushButton("Vol +")
+        vol_down.setObjectName("volume")
+        vol_up.setObjectName("volume")
+        vol_down.setFixedSize(64, 30)
+        vol_up.setFixedSize(64, 30)
         self.volume_label = QLabel(f"{self.volume}%")
         self.volume_label.setStyleSheet("font-size: 10px; color: #777;")
 
