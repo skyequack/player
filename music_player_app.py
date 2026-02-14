@@ -127,64 +127,64 @@ class MusicPlayerApp(QWidget):
             muted = "#777777"
 
         self.setStyleSheet(f"""
-        QWidget {
+        QWidget {{
             background-color: {bg};
             color: {fg};
             font-family: "Segoe UI", "San Francisco", "Helvetica", Arial;
             font-size: 11px;
-        }
+        }}
 
-        QListWidget {
+        QListWidget {{
             border: none;
             padding: 2px;
             outline: none;
-        }
+        }}
 
-        QListWidget::item {
+        QListWidget::item {{
             padding: 6px 10px;
             border-bottom: 1px solid {list_item_border};
-        }
+        }}
 
-        QListWidget::item:selected {
+        QListWidget::item:selected {{
             background-color: {selected_bg};
             color: {fg};
-        }
+        }}
 
-        QPushButton {
+        QPushButton {{
             background-color: transparent;
             border: none;
             padding: 0px 2px;
             min-height: 20px;
             font-size: 11px;
-        }
+        }}
 
-        QPushButton:pressed {
+        QPushButton:pressed {{
             color: #555555;
-        }
+        }}
 
-        QPushButton#accent {
+        QPushButton#accent {{
             background-color: transparent;
             color: {accent};
             border: none;
             font-weight: 600;
-        }
+        }}
 
-        QPushButton#volume {
+        QPushButton#volume {{
             background-color: {volume_bg};
             border: 1px solid {volume_border};
             border-radius: 10px;
             padding: 2px 10px;
             min-height: 30px;
             font-size: 12px;
-        }
+        }}
 
-        QPushButton#volume:pressed {
+        QPushButton#volume:pressed {{
             background-color: {border};
-        }
+        }}
 
-        QPushButton#accent:pressed {
+        QPushButton#accent:pressed {{
             color: {accent_pressed};
-        }
+        }}
 
         QLabel#landing_title {{
             color: {fg};
@@ -202,25 +202,25 @@ class MusicPlayerApp(QWidget):
             font-size: 10px;
         }}
 
-        QSlider::groove:horizontal {
+        QSlider::groove:horizontal {{
             height: 4px;
             background: {slider_bg};
             border-radius: 1px;
-        }
+        }}
 
-        QSlider::sub-page:horizontal {
+        QSlider::sub-page:horizontal {{
             background: {accent};
             border-radius: 1px;
-        }
+        }}
 
-        QSlider::handle:horizontal {
+        QSlider::handle:horizontal {{
             background: {slider_handle};
             border: 1px solid {accent};
             width: 14px;
             height: 14px;
             margin: -5px 0;
             border-radius: 7px;
-        }
+        }}
         """)
 
         self.update_theme_toggle_label()
