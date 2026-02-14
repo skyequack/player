@@ -23,7 +23,7 @@ class MusicPlayerApp(QWidget):
 
         # Landscape screen dimensions
         self.SCREEN_WIDTH = 480
-        self.SCREEN_HEIGHT = 280
+        self.SCREEN_HEIGHT = 260
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
