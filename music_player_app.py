@@ -28,6 +28,8 @@ class MusicPlayerApp(QWidget):
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
         self.player = self.instance.media_player_new()
+        self.volume = 70
+        self.player.audio_set_volume(self.volume)
 
         # Data
         self.albums = {}
@@ -77,6 +79,12 @@ class MusicPlayerApp(QWidget):
 
     def touch_height(self):
         return 22
+
+    def adjust_volume(self, delta):
+        self.volume = max(0, min(100, self.volume + delta))
+        self.player.audio_set_volume(self.volume)
+        if hasattr(self, "volume_label"):
+            self.volume_label.setText(f"{self.volume}%")
 
     # ---------- Theme ----------
     def set_minimal_theme(self):
@@ -294,6 +302,23 @@ class MusicPlayerApp(QWidget):
         tagline = QLabel("Your library, wide view")
         tagline.setStyleSheet("font-size: 11px; color: #666;")
         left_col.addWidget(tagline)
+
+        volume_row = QHBoxLayout()
+        volume_row.setSpacing(6)
+
+        vol_down = QPushButton("Vol -")
+        vol_up = QPushButton("Vol +")
+        self.volume_label = QLabel(f"{self.volume}%")
+        self.volume_label.setStyleSheet("font-size: 10px; color: #777;")
+
+        vol_down.clicked.connect(lambda: self.adjust_volume(-5))
+        vol_up.clicked.connect(lambda: self.adjust_volume(5))
+
+        volume_row.addWidget(vol_down)
+        volume_row.addWidget(vol_up)
+        volume_row.addWidget(self.volume_label)
+        volume_row.addStretch()
+        left_col.addLayout(volume_row)
 
         left_col.addStretch()
 
