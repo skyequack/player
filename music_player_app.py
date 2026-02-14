@@ -21,9 +21,9 @@ class MusicPlayerApp(QWidget):
         self.music_root = music_root
         self.favorites_file = os.path.expanduser("~/.music_player_favorites.json")
 
-        # Portrait screen dimensions for iPod-style display
-        self.SCREEN_WIDTH = 320
-        self.SCREEN_HEIGHT = 480
+        # Landscape screen dimensions
+        self.SCREEN_WIDTH = 480
+        self.SCREEN_HEIGHT = 320
 
         # VLC
         self.instance = vlc.Instance(["--aout=alsa", "--alsa-audio-device=hw:1,0"])
@@ -39,8 +39,10 @@ class MusicPlayerApp(QWidget):
         self.current_album = None
         self.current_index = -1
         self.track_ending = False
+        self.now_playing_sidebars = []
+        self.sidebar_play_buttons = []
 
-        # Set fixed size for portrait display
+        # Set fixed size for landscape display
         self.setFixedSize(self.SCREEN_WIDTH, self.SCREEN_HEIGHT)
         self.setWindowTitle("Music Player")
 
@@ -68,7 +70,7 @@ class MusicPlayerApp(QWidget):
             background-color: #ffffff;
             color: #000000;
             font-family: "Segoe UI", "San Francisco", "Helvetica", Arial;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         QListWidget {
@@ -78,7 +80,7 @@ class MusicPlayerApp(QWidget):
         }
 
         QListWidget::item {
-            padding: 6px 8px;
+            padding: 6px 10px;
             border-bottom: 1px solid #f0f0f0;
         }
 
@@ -92,8 +94,8 @@ class MusicPlayerApp(QWidget):
             border: 1px solid #e0e0e0;
             border-radius: 6px;
             padding: 4px 8px;
-            min-height: 30px;
-            font-size: 10px;
+            min-height: 28px;
+            font-size: 11px;
         }
 
         QPushButton:pressed {
@@ -112,7 +114,7 @@ class MusicPlayerApp(QWidget):
         }
 
         QSlider::groove:horizontal {
-            height: 3px;
+            height: 4px;
             background: #e8e8e8;
             border-radius: 1px;
         }
@@ -125,10 +127,10 @@ class MusicPlayerApp(QWidget):
         QSlider::handle:horizontal {
             background: #ffffff;
             border: 1px solid #007AFF;
-            width: 12px;
-            height: 12px;
+            width: 14px;
+            height: 14px;
             margin: -5px 0;
-            border-radius: 6px;
+            border-radius: 7px;
         }
         """)
 
@@ -157,7 +159,7 @@ class MusicPlayerApp(QWidget):
 
     def create_header(self, title, back_action):
         header = QWidget()
-        header.setFixedHeight(40)
+        header.setFixedHeight(32)
         layout = QHBoxLayout(header)
         layout.setContentsMargins(4, 4, 4, 4)
 
@@ -168,7 +170,7 @@ class MusicPlayerApp(QWidget):
 
         label = QLabel(title)
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 11px; font-weight: 600;")
+        label.setStyleSheet("font-size: 12px; font-weight: 600;")
         layout.addWidget(label, 1)
 
         spacer = QLabel()
@@ -176,18 +178,105 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(spacer)
         return header
 
+    def create_now_playing_sidebar(self):
+        container = QWidget()
+        container.setStyleSheet(
+            "background-color: #fafafa; border: 1px solid #ededed; "
+            "border-radius: 8px;"
+        )
+        container.setFixedHeight(120)
+
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(6, 6, 6, 6)
+        layout.setSpacing(4)
+
+        title = QLabel("Now Playing")
+        title.setStyleSheet("font-size: 11px; font-weight: 600;")
+        layout.addWidget(title)
+
+        row = QHBoxLayout()
+        row.setSpacing(6)
+
+        art = QLabel()
+        art.setAlignment(Qt.AlignCenter)
+        art.setFixedSize(56, 56)
+        row.addWidget(art)
+
+        text_col = QVBoxLayout()
+        text_col.setSpacing(2)
+
+        track = QLabel("Nothing playing")
+        track.setWordWrap(True)
+        track.setStyleSheet("font-size: 11px; font-weight: 600;")
+        text_col.addWidget(track)
+
+        artist = QLabel("")
+        artist.setWordWrap(True)
+        artist.setStyleSheet("font-size: 10px; color: #666;")
+        text_col.addWidget(artist)
+
+        row.addLayout(text_col)
+        row.addStretch()
+        layout.addLayout(row)
+
+        controls = QHBoxLayout()
+        controls.setSpacing(6)
+
+        prev_btn = QPushButton("⏮")
+        play_btn = QPushButton("▶")
+        next_btn = QPushButton("⏭")
+
+        for btn in [prev_btn, play_btn, next_btn]:
+            btn.setFixedSize(28, 24)
+            btn.setStyleSheet("border-radius: 6px; font-size: 10px;")
+
+        prev_btn.clicked.connect(self.prev_track)
+        play_btn.clicked.connect(self.toggle_play)
+        next_btn.clicked.connect(self.next_track)
+
+        controls.addWidget(prev_btn)
+        controls.addWidget(play_btn)
+        controls.addWidget(next_btn)
+        controls.addStretch()
+        layout.addLayout(controls)
+
+        self.now_playing_sidebars.append({
+            "art": art,
+            "track": track,
+            "artist": artist
+        })
+        self.sidebar_play_buttons.append(play_btn)
+        self.set_preview_art(art, None, 56)
+
+        return container
+
     def create_landing_page(self):
         page = QWidget()
-        layout = QVBoxLayout(page)
-        layout.setSpacing(8)
-        layout.setContentsMargins(16, 40, 16, 16)
+        layout = QHBoxLayout(page)
+        layout.setSpacing(12)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        left_col = QVBoxLayout()
+        left_col.setSpacing(8)
 
         title = QLabel("Music")
-        title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 24px; font-weight: 700; color: #000000;")
-        layout.addWidget(title)
-        
-        layout.addSpacing(20)
+        title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        title.setStyleSheet("font-size: 26px; font-weight: 700; color: #000000;")
+        left_col.addWidget(title)
+
+        tagline = QLabel("Your library, wide view")
+        tagline.setStyleSheet("font-size: 11px; color: #666;")
+        left_col.addWidget(tagline)
+
+        left_col.addStretch()
+
+        btn_exit = QPushButton("Exit")
+        btn_exit.setFixedHeight(32)
+        btn_exit.clicked.connect(self.close)
+        left_col.addWidget(btn_exit)
+
+        right_col = QVBoxLayout()
+        right_col.setSpacing(10)
 
         btn_albums = QPushButton("Albums")
         btn_artists = QPushButton("Artists")
@@ -195,22 +284,19 @@ class MusicPlayerApp(QWidget):
 
         for b in [btn_albums, btn_artists, btn_favorites]:
             b.setObjectName("accent")
-            b.setFixedHeight(44)
+            b.setFixedHeight(40)
 
         btn_albums.clicked.connect(lambda: self.stack.setCurrentIndex(1))
         btn_artists.clicked.connect(lambda: self.stack.setCurrentIndex(2))
         btn_favorites.clicked.connect(lambda: self.stack.setCurrentIndex(3))
 
-        layout.addWidget(btn_albums)
-        layout.addWidget(btn_artists)
-        layout.addWidget(btn_favorites)
-        
-        layout.addStretch()
+        right_col.addWidget(btn_albums)
+        right_col.addWidget(btn_artists)
+        right_col.addWidget(btn_favorites)
+        right_col.addStretch()
 
-        btn_exit = QPushButton("Exit")
-        btn_exit.setFixedHeight(36)
-        btn_exit.clicked.connect(self.close)
-        layout.addWidget(btn_exit)
+        layout.addLayout(left_col, 1)
+        layout.addLayout(right_col, 1)
 
         return page
 
@@ -221,9 +307,64 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(self.create_header("Albums",
                                             lambda: self.stack.setCurrentIndex(0)))
 
+        content = QHBoxLayout()
+        content.setSpacing(10)
+
         self.album_list = QListWidget()
-        self.album_list.itemClicked.connect(self.show_album_detail)
-        layout.addWidget(self.album_list)
+        self.album_list.itemClicked.connect(self.update_album_preview)
+        self.album_list.itemDoubleClicked.connect(self.show_album_detail)
+        content.addWidget(self.album_list, 3)
+
+        preview = QWidget()
+        preview_layout = QVBoxLayout(preview)
+        preview_layout.setContentsMargins(8, 8, 8, 8)
+        preview_layout.setSpacing(6)
+
+        self.album_preview_art = QLabel()
+        self.album_preview_art.setAlignment(Qt.AlignCenter)
+        self.album_preview_art.setFixedSize(160, 160)
+        preview_layout.addWidget(self.album_preview_art, alignment=Qt.AlignCenter)
+
+        self.album_preview_title = QLabel("Select an album")
+        self.album_preview_title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.album_preview_title.setWordWrap(True)
+        self.album_preview_title.setStyleSheet("font-size: 13px; font-weight: 600;")
+        preview_layout.addWidget(self.album_preview_title)
+
+        self.album_preview_artist = QLabel("")
+        self.album_preview_artist.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.album_preview_artist.setWordWrap(True)
+        self.album_preview_artist.setStyleSheet("font-size: 11px; color: #666;")
+        preview_layout.addWidget(self.album_preview_artist)
+
+        preview_layout.addStretch()
+
+        preview_actions = QHBoxLayout()
+        self.album_open_btn = QPushButton("Open")
+        self.album_play_btn = QPushButton("Play")
+        self.album_open_btn.setEnabled(False)
+        self.album_play_btn.setEnabled(False)
+        self.album_open_btn.clicked.connect(self.open_preview_album)
+        self.album_play_btn.clicked.connect(self.play_preview_album)
+        preview_actions.addWidget(self.album_open_btn)
+        preview_actions.addWidget(self.album_play_btn)
+        preview_layout.addLayout(preview_actions)
+
+        preview_layout.addSpacing(4)
+        preview_layout.addWidget(self.create_now_playing_sidebar())
+
+        content.addWidget(preview, 2)
+
+        layout.addLayout(content)
+
+        self.album_preview_album = None
+        self.set_album_preview(None, self.album_preview_art,
+                       self.album_preview_title,
+                       self.album_preview_artist,
+                       self.album_open_btn,
+                       self.album_play_btn,
+                       160,
+                       "Select an album")
 
         return page
 
@@ -234,9 +375,32 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(self.create_header("Artists",
                                             lambda: self.stack.setCurrentIndex(0)))
 
+        content = QHBoxLayout()
+        content.setSpacing(10)
+
         self.artist_list = QListWidget()
         self.artist_list.itemClicked.connect(self.show_artist_albums)
-        layout.addWidget(self.artist_list)
+        content.addWidget(self.artist_list, 2)
+
+        right_panel = QWidget()
+        right_layout = QVBoxLayout(right_panel)
+        right_layout.setContentsMargins(8, 8, 8, 8)
+        right_layout.setSpacing(6)
+
+        self.artist_album_header = QLabel("Select an artist")
+        self.artist_album_header.setStyleSheet("font-size: 13px; font-weight: 600;")
+        right_layout.addWidget(self.artist_album_header)
+
+        self.artist_album_list = QListWidget()
+        self.artist_album_list.itemDoubleClicked.connect(self.show_album_detail)
+        right_layout.addWidget(self.artist_album_list)
+
+        right_layout.addSpacing(4)
+        right_layout.addWidget(self.create_now_playing_sidebar())
+
+        content.addWidget(right_panel, 3)
+
+        layout.addLayout(content)
 
         return page
 
@@ -247,9 +411,64 @@ class MusicPlayerApp(QWidget):
         layout.addWidget(self.create_header("Favorites",
                                             lambda: self.stack.setCurrentIndex(0)))
 
+        content = QHBoxLayout()
+        content.setSpacing(10)
+
         self.favorites_list = QListWidget()
-        self.favorites_list.itemClicked.connect(self.show_album_detail)
-        layout.addWidget(self.favorites_list)
+        self.favorites_list.itemClicked.connect(self.update_favorites_preview)
+        self.favorites_list.itemDoubleClicked.connect(self.show_album_detail)
+        content.addWidget(self.favorites_list, 3)
+
+        preview = QWidget()
+        preview_layout = QVBoxLayout(preview)
+        preview_layout.setContentsMargins(8, 8, 8, 8)
+        preview_layout.setSpacing(6)
+
+        self.favorites_preview_art = QLabel()
+        self.favorites_preview_art.setAlignment(Qt.AlignCenter)
+        self.favorites_preview_art.setFixedSize(160, 160)
+        preview_layout.addWidget(self.favorites_preview_art, alignment=Qt.AlignCenter)
+
+        self.favorites_preview_title = QLabel("Select a favorite")
+        self.favorites_preview_title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.favorites_preview_title.setWordWrap(True)
+        self.favorites_preview_title.setStyleSheet("font-size: 13px; font-weight: 600;")
+        preview_layout.addWidget(self.favorites_preview_title)
+
+        self.favorites_preview_artist = QLabel("")
+        self.favorites_preview_artist.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.favorites_preview_artist.setWordWrap(True)
+        self.favorites_preview_artist.setStyleSheet("font-size: 11px; color: #666;")
+        preview_layout.addWidget(self.favorites_preview_artist)
+
+        preview_layout.addStretch()
+
+        preview_actions = QHBoxLayout()
+        self.favorites_open_btn = QPushButton("Open")
+        self.favorites_play_btn = QPushButton("Play")
+        self.favorites_open_btn.setEnabled(False)
+        self.favorites_play_btn.setEnabled(False)
+        self.favorites_open_btn.clicked.connect(self.open_favorites_preview)
+        self.favorites_play_btn.clicked.connect(self.play_favorites_preview)
+        preview_actions.addWidget(self.favorites_open_btn)
+        preview_actions.addWidget(self.favorites_play_btn)
+        preview_layout.addLayout(preview_actions)
+
+        preview_layout.addSpacing(4)
+        preview_layout.addWidget(self.create_now_playing_sidebar())
+
+        content.addWidget(preview, 2)
+
+        layout.addLayout(content)
+
+        self.favorites_preview_album = None
+        self.set_album_preview(None, self.favorites_preview_art,
+                       self.favorites_preview_title,
+                       self.favorites_preview_artist,
+                       self.favorites_open_btn,
+                       self.favorites_play_btn,
+                       160,
+                       "Select a favorite")
 
         return page
 
@@ -260,7 +479,7 @@ class MusicPlayerApp(QWidget):
         layout.setSpacing(0)
 
         header = QWidget()
-        header.setFixedHeight(40)
+        header.setFixedHeight(32)
         h = QHBoxLayout(header)
         h.setContentsMargins(4, 4, 4, 4)
 
@@ -272,7 +491,7 @@ class MusicPlayerApp(QWidget):
         self.detail_album_label = QLabel("")
         self.detail_album_label.setAlignment(Qt.AlignCenter)
         self.detail_album_label.setStyleSheet(
-            "font-size: 10px; font-weight: 600;"
+            "font-size: 11px; font-weight: 600;"
         )
         h.addWidget(self.detail_album_label, 1)
 
@@ -292,88 +511,81 @@ class MusicPlayerApp(QWidget):
 
     def create_now_playing_page(self):
         page = QWidget()
-        layout = QVBoxLayout(page)
-        layout.setContentsMargins(0, 0, 0, 6)
-        layout.setSpacing(6)
+        layout = QHBoxLayout(page)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(12)
 
-        # Header with back button
-        header = QWidget()
-        header.setFixedHeight(36)
-        h_layout = QHBoxLayout(header)
-        h_layout.setContentsMargins(4, 4, 4, 4)
-        
-        back_btn = QPushButton("‹")
-        back_btn.setFixedSize(32, 28)
-        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(4))
-        h_layout.addWidget(back_btn)
-        h_layout.addStretch()
-        
-        layout.addWidget(header)
-
-        # Album art - fixed size for small portrait screen
+        # Left: album art column
         art_container = QWidget()
         art_layout = QVBoxLayout(art_container)
-        art_layout.setContentsMargins(20, 0, 20, 0)
-        
+        art_layout.setContentsMargins(0, 0, 0, 0)
+        art_layout.setSpacing(6)
+
+        back_row = QHBoxLayout()
+        back_btn = QPushButton("‹ Back")
+        back_btn.setFixedSize(72, 28)
+        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(4))
+        back_row.addWidget(back_btn)
+        back_row.addStretch()
+        art_layout.addLayout(back_row)
+
         self.album_art = QLabel()
         self.album_art.setAlignment(Qt.AlignCenter)
-        self.album_art.setFixedSize(220, 220)  # Fixed size for 320px wide screen
+        self.album_art.setFixedSize(200, 200)
         self.album_art.setScaledContents(False)
         art_layout.addWidget(self.album_art, alignment=Qt.AlignCenter)
-        
-        layout.addWidget(art_container)
-        layout.addSpacing(2)
+        art_layout.addStretch()
 
-        # Track info
+        # Right: track info and controls
+        right_col = QVBoxLayout()
+        right_col.setSpacing(6)
+
         self.track_label = QLabel("No track")
-        self.track_label.setAlignment(Qt.AlignCenter)
+        self.track_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.track_label.setWordWrap(True)
         self.track_label.setStyleSheet(
-            "font-size: 13px; font-weight: 600; padding: 0 12px;"
+            "font-size: 14px; font-weight: 600; padding-right: 6px;"
         )
-        layout.addWidget(self.track_label)
+        right_col.addWidget(self.track_label)
 
         self.artist_label = QLabel("")
-        self.artist_label.setAlignment(Qt.AlignCenter)
+        self.artist_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.artist_label.setWordWrap(True)
-        self.artist_label.setStyleSheet("font-size: 10px; color: #666; padding: 0 12px;")
-        layout.addWidget(self.artist_label)
+        self.artist_label.setStyleSheet("font-size: 11px; color: #666;")
+        right_col.addWidget(self.artist_label)
 
-        layout.addSpacing(2)
+        right_col.addStretch()
 
-        # Progress slider
         slider_container = QWidget()
         slider_layout = QVBoxLayout(slider_container)
-        slider_layout.setContentsMargins(12, 0, 12, 0)
+        slider_layout.setContentsMargins(0, 0, 0, 0)
         slider_layout.setSpacing(2)
-        
+
         self.progress = QSlider(Qt.Horizontal)
         self.progress.sliderMoved.connect(self.seek)
         slider_layout.addWidget(self.progress)
-        
-        self.time_label = QLabel("0:00 / 0:00")
-        self.time_label.setAlignment(Qt.AlignCenter)
-        self.time_label.setStyleSheet("font-size: 9px; color: #888;")
-        slider_layout.addWidget(self.time_label)
-        
-        layout.addWidget(slider_container)
 
-        # Control buttons
+        self.time_label = QLabel("0:00 / 0:00")
+        self.time_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.time_label.setStyleSheet("font-size: 10px; color: #888;")
+        slider_layout.addWidget(self.time_label)
+
+        right_col.addWidget(slider_container)
+
         controls = QHBoxLayout()
-        controls.setSpacing(16)
+        controls.setSpacing(12)
 
         self.prev_btn = QPushButton("⏮")
         self.play_btn = QPushButton("▶")
         self.next_btn = QPushButton("⏭")
 
-        # Smaller buttons for compact layout
-        self.prev_btn.setFixedSize(40, 40)
-        self.play_btn.setFixedSize(48, 48)
-        self.next_btn.setFixedSize(40, 40)
-        
-        self.prev_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
-        self.play_btn.setStyleSheet("border-radius: 24px; font-size: 15px;")
-        self.next_btn.setStyleSheet("border-radius: 20px; font-size: 13px;")
+        self.prev_btn.setFixedSize(44, 36)
+        self.play_btn.setFixedSize(54, 40)
+        self.next_btn.setFixedSize(44, 36)
+
+        self.prev_btn.setStyleSheet("border-radius: 18px; font-size: 13px;")
+        self.play_btn.setStyleSheet("border-radius: 20px; font-size: 15px;")
+        self.next_btn.setStyleSheet("border-radius: 18px; font-size: 13px;")
 
         self.play_btn.setObjectName("accent")
 
@@ -381,14 +593,15 @@ class MusicPlayerApp(QWidget):
         self.play_btn.clicked.connect(self.toggle_play)
         self.next_btn.clicked.connect(self.next_track)
 
-        controls.addStretch()
         controls.addWidget(self.prev_btn)
         controls.addWidget(self.play_btn)
         controls.addWidget(self.next_btn)
         controls.addStretch()
 
-        layout.addLayout(controls)
-        layout.addSpacing(4)
+        right_col.addLayout(controls)
+
+        layout.addWidget(art_container, 0)
+        layout.addLayout(right_col, 1)
         
         return page
 
@@ -545,9 +758,19 @@ class MusicPlayerApp(QWidget):
                 item.setData(Qt.UserRole, album)
                 self.favorites_list.addItem(item)
 
+        self.set_album_preview(None, self.favorites_preview_art,
+                       self.favorites_preview_title,
+                       self.favorites_preview_artist,
+                       self.favorites_open_btn,
+                       self.favorites_play_btn,
+                       160,
+                       "Select a favorite")
+        self.favorites_preview_album = None
+
     # ---------- Navigation ----------
-    def show_album_detail(self, item):
-        album = item.data(Qt.UserRole)
+    def open_album(self, album):
+        if album not in self.albums:
+            return
         self.current_album = album
         self.current_tracks = self.albums[album]
 
@@ -566,21 +789,115 @@ class MusicPlayerApp(QWidget):
 
         self.stack.setCurrentIndex(4)
 
+    def show_album_detail(self, item):
+        self.open_album(item.data(Qt.UserRole))
+
     def show_artist_albums(self, item):
         artist = item.data(Qt.UserRole)
-        self.album_list.clear()
+        self.artist_album_header.setText(f"Albums • {artist}")
+        self.artist_album_list.clear()
 
         for album in self.artists[artist]:
             art = self.album_metadata[album]['artist']
             it = QListWidgetItem(f"{album}\n{art}")
             it.setData(Qt.UserRole, album)
-            self.album_list.addItem(it)
-
-        self.stack.setCurrentIndex(1)
+            self.artist_album_list.addItem(it)
 
     def go_back_from_detail(self):
         self.populate_lists()
         self.stack.setCurrentIndex(1)
+
+    def set_album_preview(self, album, art_label, title_label, artist_label,
+                          open_btn, play_btn, size, empty_title):
+        if not album or album not in self.album_metadata:
+            title_label.setText(empty_title)
+            artist_label.setText("")
+            open_btn.setEnabled(False)
+            play_btn.setEnabled(False)
+            self.set_preview_art(art_label, None, size)
+            return
+
+        meta = self.album_metadata[album]
+        title_label.setText(album)
+        artist_label.setText(meta.get('artist', 'Unknown Artist'))
+        self.set_preview_art(art_label, meta.get('art'), size)
+        open_btn.setEnabled(True)
+        play_btn.setEnabled(True)
+
+    def set_preview_art(self, target_label, art, size):
+        if art:
+            pix = QPixmap()
+            pix.loadFromData(art)
+            target_label.setPixmap(
+                pix.scaled(size, size, Qt.KeepAspectRatio,
+                           Qt.SmoothTransformation)
+            )
+        else:
+            target_label.setPixmap(self.render_placeholder_pixmap(size))
+
+    def render_placeholder_pixmap(self, size):
+        pix = QPixmap(size, size)
+        pix.fill(QColor("#f0f0f0"))
+
+        painter = QPainter(pix)
+        painter.setPen(QColor("#9e9e9e"))
+
+        font = QFont()
+        font.setPointSize(int(size * 0.25))
+        painter.setFont(font)
+
+        painter.drawText(0, 0, size, size, Qt.AlignCenter, "♪")
+        painter.end()
+
+        return pix
+
+    def update_album_preview(self, item):
+        album = item.data(Qt.UserRole)
+        self.album_preview_album = album
+        self.set_album_preview(album, self.album_preview_art,
+                       self.album_preview_title,
+                       self.album_preview_artist,
+                       self.album_open_btn,
+                       self.album_play_btn,
+                       160,
+                       "Select an album")
+
+    def update_favorites_preview(self, item):
+        album = item.data(Qt.UserRole)
+        self.favorites_preview_album = album
+        self.set_album_preview(album, self.favorites_preview_art,
+                       self.favorites_preview_title,
+                       self.favorites_preview_artist,
+                       self.favorites_open_btn,
+                       self.favorites_play_btn,
+                       160,
+                       "Select a favorite")
+
+    def open_preview_album(self):
+        if self.album_preview_album:
+            self.open_album(self.album_preview_album)
+
+    def play_preview_album(self):
+        if self.album_preview_album:
+            self.play_album(self.album_preview_album)
+
+    def open_favorites_preview(self):
+        if self.favorites_preview_album:
+            self.open_album(self.favorites_preview_album)
+
+    def play_favorites_preview(self):
+        if self.favorites_preview_album:
+            self.play_album(self.favorites_preview_album)
+
+    def play_album(self, album):
+        if album not in self.albums:
+            return
+        self.current_album = album
+        self.current_tracks = self.albums[album]
+        self.update_favorite_button()
+        if self.current_tracks:
+            self.play_track(0)
+            self.stack.setCurrentIndex(5)
 
     # ---------- Playback ----------
     def play_selected_track(self, item):
@@ -599,7 +916,7 @@ class MusicPlayerApp(QWidget):
         self.player.set_media(media)
         self.player.play()
 
-        self.play_btn.setText("⏸")
+        self.set_play_button_state(True)
         self.update_now_playing(path)
 
     def update_now_playing(self, path):
@@ -608,7 +925,7 @@ class MusicPlayerApp(QWidget):
         self.artist_label.setText(f"{meta['artist']} • {meta['album']}")
 
         art = meta.get('art')
-        size = 220  # Fixed size for portrait screen
+        size = self.album_art.width()
 
         if art:
             pix = QPixmap()
@@ -620,29 +937,36 @@ class MusicPlayerApp(QWidget):
         else:
             self.set_placeholder_art(size)
 
+        self.update_now_playing_sidebars(meta)
+
     def set_placeholder_art(self, size):
-        pix = QPixmap(size, size)
-        pix.fill(QColor("#f0f0f0"))
+        self.album_art.setPixmap(self.render_placeholder_pixmap(size))
 
-        painter = QPainter(pix)
-        painter.setPen(QColor("#9e9e9e"))
+    def update_now_playing_sidebars(self, meta):
+        track = meta.get('title', 'Unknown')
+        artist = meta.get('artist', 'Unknown Artist')
+        album = meta.get('album', 'Unknown Album')
+        art = meta.get('art')
 
-        font = QFont()
-        font.setPointSize(int(size * 0.25))
-        painter.setFont(font)
+        for sidebar in self.now_playing_sidebars:
+            sidebar['track'].setText(track)
+            sidebar['artist'].setText(f"{artist} • {album}")
+            size = sidebar['art'].width() or 56
+            self.set_preview_art(sidebar['art'], art, size)
 
-        painter.drawText(0, 0, size, size, Qt.AlignCenter, "♪")
-        painter.end()
-
-        self.album_art.setPixmap(pix)
+    def set_play_button_state(self, is_playing):
+        text = "⏸" if is_playing else "▶"
+        self.play_btn.setText(text)
+        for btn in self.sidebar_play_buttons:
+            btn.setText(text)
 
     def toggle_play(self):
         if self.player.is_playing():
             self.player.pause()
-            self.play_btn.setText("▶")
+            self.set_play_button_state(False)
         else:
             self.player.play()
-            self.play_btn.setText("⏸")
+            self.set_play_button_state(True)
 
     def next_track(self):
         self.play_track((self.current_index + 1) % len(self.current_tracks))
