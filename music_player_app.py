@@ -48,7 +48,7 @@ class MusicPlayerApp(QWidget):
         self.current_artist = None
 
         # Pagination state
-        self.albums_per_page = 4
+        self.albums_per_page = 5
         self.artists_per_page = 7
         self.favorites_per_page = 5
         self.tracks_per_page = 7
