@@ -30,6 +30,7 @@ class MusicPlayerApp(QWidget):
         self.player = self.instance.media_player_new()
         self.volume = 70
         self.player.audio_set_volume(self.volume)
+        self.theme = "light"
 
         # Data
         self.albums = {}
@@ -86,13 +87,49 @@ class MusicPlayerApp(QWidget):
         if hasattr(self, "volume_label"):
             self.volume_label.setText(f"{self.volume}%")
 
+    def update_theme_toggle_label(self):
+        if hasattr(self, "theme_toggle_btn"):
+            label = "Dark" if self.theme == "light" else "Light"
+            self.theme_toggle_btn.setText(f"Theme: {label}")
+
+    def toggle_theme(self):
+        self.theme = "dark" if self.theme == "light" else "light"
+        self.set_minimal_theme()
+
     # ---------- Theme ----------
     def set_minimal_theme(self):
         """Apple Music-inspired minimal theme optimized for small portrait screen"""
-        self.setStyleSheet("""
+        if self.theme == "dark":
+            bg = "#121316"
+            fg = "#e6e6e6"
+            border = "#1f2226"
+            list_item_border = "#1f2226"
+            selected_bg = "#1a1c20"
+            accent = "#4da3ff"
+            accent_pressed = "#2f7ddb"
+            slider_bg = "#2b2f35"
+            slider_handle = "#121316"
+            volume_bg = "#1f2226"
+            volume_border = "#2b2f35"
+            muted = "#9aa1a9"
+        else:
+            bg = "#ffffff"
+            fg = "#000000"
+            border = "#f0f0f0"
+            list_item_border = "#f0f0f0"
+            selected_bg = "#f5f5f5"
+            accent = "#007AFF"
+            accent_pressed = "#0051D5"
+            slider_bg = "#e8e8e8"
+            slider_handle = "#ffffff"
+            volume_bg = "#f2f2f2"
+            volume_border = "#dddddd"
+            muted = "#777777"
+
+        self.setStyleSheet(f"""
         QWidget {
-            background-color: #ffffff;
-            color: #000000;
+            background-color: {bg};
+            color: {fg};
             font-family: "Segoe UI", "San Francisco", "Helvetica", Arial;
             font-size: 11px;
         }
@@ -105,12 +142,12 @@ class MusicPlayerApp(QWidget):
 
         QListWidget::item {
             padding: 6px 10px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid {list_item_border};
         }
 
         QListWidget::item:selected {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: {selected_bg};
+            color: {fg};
         }
 
         QPushButton {
@@ -127,14 +164,14 @@ class MusicPlayerApp(QWidget):
 
         QPushButton#accent {
             background-color: transparent;
-            color: #007AFF;
+            color: {accent};
             border: none;
             font-weight: 600;
         }
 
         QPushButton#volume {
-            background-color: #f2f2f2;
-            border: 1px solid #dddddd;
+            background-color: {volume_bg};
+            border: 1px solid {volume_border};
             border-radius: 10px;
             padding: 2px 10px;
             min-height: 30px;
@@ -142,34 +179,51 @@ class MusicPlayerApp(QWidget):
         }
 
         QPushButton#volume:pressed {
-            background-color: #e6e6e6;
+            background-color: {border};
         }
 
         QPushButton#accent:pressed {
-            color: #0051D5;
+            color: {accent_pressed};
         }
+
+        QLabel#landing_title {{
+            color: {fg};
+            font-size: 26px;
+            font-weight: 700;
+        }}
+
+        QLabel#landing_tagline {{
+            color: {muted};
+            font-size: 11px;
+        }}
+
+        QLabel#volume_label {{
+            color: {muted};
+            font-size: 10px;
+        }}
 
         QSlider::groove:horizontal {
             height: 4px;
-            background: #e8e8e8;
+            background: {slider_bg};
             border-radius: 1px;
         }
 
         QSlider::sub-page:horizontal {
-            background: #007AFF;better vol
-
+            background: {accent};
             border-radius: 1px;
         }
 
         QSlider::handle:horizontal {
-            background: #ffffff;
-            border: 1px solid #007AFF;
+            background: {slider_handle};
+            border: 1px solid {accent};
             width: 14px;
             height: 14px;
             margin: -5px 0;
             border-radius: 7px;
         }
         """)
+
+        self.update_theme_toggle_label()
 
     # ---------- UI ----------
     def init_ui(self):
@@ -310,11 +364,11 @@ class MusicPlayerApp(QWidget):
 
         title = QLabel("Music")
         title.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        title.setStyleSheet("font-size: 26px; font-weight: 700; color: #000000;")
+        title.setObjectName("landing_title")
         left_col.addWidget(title)
 
         tagline = QLabel("Your library, wide view")
-        tagline.setStyleSheet("font-size: 11px; color: #666;")
+        tagline.setObjectName("landing_tagline")
         left_col.addWidget(tagline)
 
         volume_row = QHBoxLayout()
@@ -327,7 +381,7 @@ class MusicPlayerApp(QWidget):
         vol_down.setFixedSize(64, 30)
         vol_up.setFixedSize(64, 30)
         self.volume_label = QLabel(f"{self.volume}%")
-        self.volume_label.setStyleSheet("font-size: 10px; color: #777;")
+        self.volume_label.setObjectName("volume_label")
 
         vol_down.clicked.connect(lambda: self.adjust_volume(-5))
         vol_up.clicked.connect(lambda: self.adjust_volume(5))
@@ -337,6 +391,19 @@ class MusicPlayerApp(QWidget):
         volume_row.addWidget(self.volume_label)
         volume_row.addStretch()
         left_col.addLayout(volume_row)
+
+        theme_row = QHBoxLayout()
+        theme_row.setSpacing(6)
+
+        self.theme_toggle_btn = QPushButton("")
+        self.theme_toggle_btn.setObjectName("volume")
+        self.theme_toggle_btn.setFixedSize(110, 30)
+        self.theme_toggle_btn.clicked.connect(self.toggle_theme)
+        self.update_theme_toggle_label()
+
+        theme_row.addWidget(self.theme_toggle_btn)
+        theme_row.addStretch()
+        left_col.addLayout(theme_row)
 
         left_col.addStretch()
 
