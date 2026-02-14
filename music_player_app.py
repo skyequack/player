@@ -156,7 +156,8 @@ class MusicPlayerApp(QWidget):
         }
 
         QSlider::sub-page:horizontal {
-            background: #007AFF;
+            background: #007AFF;better vol
+
             border-radius: 1px;
         }
 
